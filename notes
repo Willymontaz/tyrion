@@ -1,0 +1,40 @@
+Collection of instrumented methods/objects
+  One counter per item (int)
+  
+
+LockMonitor<LockId, Map<ThreadId, Boolean>>
+Map<LockId, Map<ThreadId, Counter>>
+
+LockMonitor<ThreadIf, Counter>
+
+Don't need 100% correctness
+
+
+
+Locks accessed only by one thread
+Locks accessed by more than one thread
+
+Compare timestamp of access-try to the timestamp of last-release-time
+
+Take a time-in timestamp and a time-out timestamp
+Compare that with others'interval
+If it intersects, then the lock is contended
+
+
+
+
+
+
+Agents and ASM
+Annotations on my locks ?
+How does the JVM handle synchronized methods ? Instrument every synchronized method of every class at startup and class loading ?
+Look at the JVM code
+
+monitor_enter and _monitor_exit
+Send an event at each enter/exit of monitor OR instrumented method
+Use a Thread Local datastructure
+
+
+
+Make it open source
+
