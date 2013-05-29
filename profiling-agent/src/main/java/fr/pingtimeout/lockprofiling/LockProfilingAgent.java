@@ -16,9 +16,10 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        System.out.printf("LockProfilingAgent : premain method invoked with args: %s and inst: %s", args, inst);
+        System.out.printf("LockProfilingAgent : premain method invoked with args: %s and inst: %s%n", args, inst);
+
         instrumentation = inst;
-//        instrumentation.addTransformer(new MyClassFileTransformer());
+        instrumentation.addTransformer(new SynchronizedMethodsTransformer());
     }
 
     /**
@@ -32,9 +33,10 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void agentmain(String args, Instrumentation inst) throws Exception {
-        System.out.printf("LockProfilingAgent : agentmain method invoked with args: %s and inst: %s", args, inst);
+        System.out.printf("LockProfilingAgent : agentmain method invoked with args: %s and inst: %s%n", args, inst);
+
         instrumentation = inst;
-//        instrumentation.addTransformer(new MyClassFileTransformer());
+        instrumentation.addTransformer(new SynchronizedMethodsTransformer());
     }
 
     /**
@@ -42,6 +44,7 @@ public class LockProfilingAgent {
      */
     public static void initialize() {
         System.out.printf("LockProfilingAgent : initialize method invoked");
+
         if (instrumentation == null) {
 //            MyJavaAgentLoader.loadAgent();
         }
