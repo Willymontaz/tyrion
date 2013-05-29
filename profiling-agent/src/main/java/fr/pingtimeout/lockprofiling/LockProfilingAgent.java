@@ -1,13 +1,18 @@
 package fr.pingtimeout.lockprofiling;
 
 import java.lang.instrument.Instrumentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LockProfilingAgent {
+
+    static Logger LOG = LoggerFactory.getLogger(LockProfilingAgent.class);
+
     private static Instrumentation instrumentation;
 
     /**
      * JVM hook to statically load the javaagent at startup.
-     *
+     * <p/>
      * After the Java Virtual Machine (JVM) has initialized, the premain method
      * will be called. Then the real application main method will be called.
      *
@@ -16,7 +21,7 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        System.out.printf("LockProfilingAgent : premain method invoked with args: %s and inst: %s%n", args, inst);
+        LOG.debug("premain() method invoked with args: {} and inst: {}", args, inst);
 
         instrumentation = inst;
         instrumentation.addTransformer(new SynchronizedMethodsTransformer());
@@ -24,7 +29,7 @@ public class LockProfilingAgent {
 
     /**
      * JVM hook to dynamically load javaagent at runtime.
-     *
+     * <p/>
      * The agent class may have an agentmain method for use when the agent is
      * started after VM startup.
      *
@@ -33,7 +38,7 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void agentmain(String args, Instrumentation inst) throws Exception {
-        System.out.printf("LockProfilingAgent : agentmain method invoked with args: %s and inst: %s%n", args, inst);
+        LOG.debug("agentmain() method invoked with args: {} and inst: {}", args, inst);
 
         instrumentation = inst;
         instrumentation.addTransformer(new SynchronizedMethodsTransformer());
@@ -43,7 +48,7 @@ public class LockProfilingAgent {
      * Programmatic hook to dynamically load javaagent at runtime.
      */
     public static void initialize() {
-        System.out.printf("LockProfilingAgent : initialize method invoked");
+        LOG.debug("initialize() method invoked");
 
         if (instrumentation == null) {
 //            MyJavaAgentLoader.loadAgent();

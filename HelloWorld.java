@@ -28,7 +28,10 @@ public class HelloWorld {
         HelloWorld hello = new HelloWorld();
 
         hello.synchronizedMethod();
+        hello.synchronizedMethod();
         hello.synchronizedBlock();
+        hello.synchronizedBlock();
+        hello.externalSynchronizedMethods();
         hello.externalSynchronizedMethods();
     }
 
