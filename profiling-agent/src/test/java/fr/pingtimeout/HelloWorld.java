@@ -16,6 +16,8 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
+package fr.pingtimeout;
+
 import java.util.Vector;
 
 public class HelloWorld {
@@ -47,10 +49,10 @@ public class HelloWorld {
 
         hello.synchronizedMethod();
         hello.synchronizedMethod();
-        hello.synchronizedBlock();
-        hello.synchronizedBlock();
-        hello.externalSynchronizedMethods();
-        hello.externalSynchronizedMethods();
+//        hello.synchronizedBlock();
+//        hello.synchronizedBlock();
+//        hello.externalSynchronizedMethods();
+//        hello.externalSynchronizedMethods();
     }
 
 
