@@ -18,16 +18,42 @@
 
 package fr.pingtimeout.lockprofiling;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LockInterceptor {
+    static ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
 
+    public static byte[] rewriteMonitorEntersAndExits(byte[] classfileBuffer) {
+        return classfileBuffer;
+    }
+
     public static void enteredSynchronizedMethod() {
-        LOG.info("Someone entered a critical section !", new Throwable("Here"));
+        trace("just entered a synchronized method");
     }
+
     public static void leftSynchronizedMethod() {
-        LOG.info("Someone left a critical section !", new Throwable("Here"));
+        trace("is leaving a synchronized method");
     }
+
+    public static void enteredSynchronizedBlock() {
+        trace("just entered a synchronized block");
+    }
+
+    public static void leftSynchronizedBlock() {
+        trace("is leaving a synchronized block");
+    }
+
+    private static void trace(String intercepted) {
+        ThreadInfo threadInfo = THREAD_MX_BEAN.getThreadInfo(Thread.currentThread().getId());
+        LOG.info("Someone " + intercepted + " !", new Throwable("Here"));
+        LOG.info("Locked monitors : {}", Arrays.toString(threadInfo.getLockedMonitors()));
+        LOG.info("Locked synchronizers : {}", Arrays.toString(threadInfo.getLockedSynchronizers()));
+    }
+
 }

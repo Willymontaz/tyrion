@@ -50,11 +50,10 @@ public class SynchronizedMethodsTransformer implements ClassFileTransformer {
         LOG.trace("classfileBuffer = {}", Arrays.toString(classfileBuffer));
         LOG.trace("MonitorEnter={}, MonitorExit={}, Goto={}", ((byte) 194), ((byte) 195), ((byte) 167));
 
-        ClassReader reader = new ClassReader(classfileBuffer);
+        ClassReader reader = new ClassReader(LockInterceptor.rewriteMonitorEntersAndExits(classfileBuffer));
         ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = new ProfilerClassVisitor(Opcodes.ASM4, writer);
         reader.accept(visitor, 0);
         return writer.toByteArray();
-
     }
 }
