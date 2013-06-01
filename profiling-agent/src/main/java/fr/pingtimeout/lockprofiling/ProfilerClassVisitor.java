@@ -38,6 +38,7 @@ public class ProfilerClassVisitor extends ClassVisitor {
         LOG.trace("Visiting method {} {} {} {} {}", accessToString(access), name, desc, signature, Arrays.toString(exceptions));
         final MethodVisitor nextVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
+
         if (isSynchronized(access)) {
             LOG.trace("Found synchronized method {} {} {} {} {}", accessToString(access), name, desc, signature, Arrays.toString(exceptions));
             return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc);
@@ -46,11 +47,11 @@ public class ProfilerClassVisitor extends ClassVisitor {
         return nextVisitor;
     }
 
-    private boolean isSynchronized(int access) {
+    public static boolean isSynchronized(int access) {
         return (access & Opcodes.ACC_SYNCHRONIZED) != 0;
     }
 
-    private String accessToString(int access) {
+    public static String accessToString(int access) {
         StringBuilder result = new StringBuilder();
         if ((access & Opcodes.ACC_ABSTRACT) != 0) result.append(" abstract");
         if ((access & Opcodes.ACC_BRIDGE) != 0) result.append(" bridge");

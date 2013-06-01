@@ -58,7 +58,7 @@ public class SynchronizedMethodWrapper extends AdviceAdapter {
     protected void onMethodExit(int opcode) {
         LOG.debug("Leaving synchronized method {}", methodName);
 
-        mv.visitMethodInsn(INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "leftSynchronizedMethod", "()V");
+        mv.visitMethodInsn(INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "leavingSynchronizedMethod", "()V");
 
         super.onMethodExit(opcode);    //To change body of overridden methods use File | Settings | File Templates.
     }

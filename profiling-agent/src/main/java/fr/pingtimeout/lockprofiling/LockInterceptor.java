@@ -37,7 +37,7 @@ public class LockInterceptor {
         trace("just entered a synchronized method");
     }
 
-    public static void leftSynchronizedMethod() {
+    public static void leavingSynchronizedMethod() {
         trace("is leaving a synchronized method");
     }
 
@@ -45,7 +45,7 @@ public class LockInterceptor {
         trace("just entered a synchronized block");
     }
 
-    public static void leftSynchronizedBlock() {
+    public static void leavingSynchronizedBlock() {
         trace("is leaving a synchronized block");
     }
 

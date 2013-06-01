@@ -34,8 +34,9 @@ public class HelloWorld {
     public void externalSynchronizedMethods() {
         Vector<String> stringVector = new Vector<String>();
         StringBuffer stringBuffer = new StringBuffer();
-        stringVector.add("Foo");
-        stringVector.add("Foo");
+        stringVector.add("K");
+        stringVector.add("Thx");
+        stringVector.add("Bye");
         for (String s : stringVector) {
             stringBuffer.append(s);
         }
@@ -46,10 +47,7 @@ public class HelloWorld {
         HelloWorld hello = new HelloWorld();
 
         hello.synchronizedMethod();
-        hello.synchronizedMethod();
         hello.synchronizedBlock();
-        hello.synchronizedBlock();
-        hello.externalSynchronizedMethods();
         hello.externalSynchronizedMethods();
     }
 
