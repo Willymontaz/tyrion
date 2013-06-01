@@ -34,24 +34,30 @@ public class LockInterceptor {
     }
 
     public static void enteredSynchronizedMethod() {
-        trace("just entered a synchronized method");
+        trace("just entered a synchronized method", new Throwable().getStackTrace()[1]);
     }
 
     public static void leavingSynchronizedMethod() {
-        trace("is leaving a synchronized method");
+        trace("is leaving a synchronized method", new Throwable().getStackTrace()[1]);
     }
 
-    public static void enteredSynchronizedBlock() {
-        trace("just entered a synchronized block");
+    public static void enteredSynchronizedBlock(Object lock) {
+        trace("just entered a synchronized block", lock);
     }
 
-    public static void leavingSynchronizedBlock() {
-        trace("is leaving a synchronized block");
+    public static void leavingSynchronizedBlock(Object lock) {
+        trace("is leaving a synchronized block", lock);
     }
 
-    private static void trace(String intercepted) {
-        ThreadInfo threadInfo = THREAD_MX_BEAN.getThreadInfo(Thread.currentThread().getId());
+    private static void trace(String intercepted, Object arg) {
         LOG.info("Someone " + intercepted + " !", new Throwable("Here"));
+        LOG.info("Additional argument : {}", arg);
+        LOG.info("");
+        dumpLocks();
+    }
+
+    private static void dumpLocks() {
+        ThreadInfo threadInfo = THREAD_MX_BEAN.getThreadInfo(Thread.currentThread().getId());
         LOG.info("Locked monitors : {}", Arrays.toString(threadInfo.getLockedMonitors()));
         LOG.info("Locked synchronizers : {}", Arrays.toString(threadInfo.getLockedSynchronizers()));
     }

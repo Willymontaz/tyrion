@@ -27,20 +27,15 @@ public class HelloWorld {
 
     public void synchronizedBlock() {
         synchronized (lock) {
-            System.out.println("World");
+            System.out.print("World");
+            innerSynchronizedBlock();
         }
     }
 
-    public void externalSynchronizedMethods() {
-        Vector<String> stringVector = new Vector<String>();
-        StringBuffer stringBuffer = new StringBuffer();
-        stringVector.add("K");
-        stringVector.add("Thx");
-        stringVector.add("Bye");
-        for (String s : stringVector) {
-            stringBuffer.append(s);
+    public void innerSynchronizedBlock() {
+        synchronized (lock) {
+            System.out.println(" !!");
         }
-        System.out.println(stringBuffer);
     }
 
     public static void main(String... args) {
@@ -48,8 +43,5 @@ public class HelloWorld {
 
         hello.synchronizedMethod();
         hello.synchronizedBlock();
-        hello.externalSynchronizedMethods();
     }
-
-
 }

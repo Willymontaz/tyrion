@@ -21,8 +21,7 @@ package fr.pingtimeout.lockprofiling;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -76,19 +75,37 @@ public class SynchronizedMethodsTransformer implements ClassFileTransformer {
             if (ProfilerClassVisitor.isSynchronized(methodNode.access)) {
                 LOG.debug("{}::{} is synchronized", classNode.name, methodNode.name);
             } else {
-                for (int i = 0; i < instructions.size(); i++) {
-                    AbstractInsnNode insnNode = instructions.get(i);
+                Collection<AbstractInsnNode> monitorEnterInsn = new ArrayList<AbstractInsnNode>();
+                Collection<AbstractInsnNode> monitorExitInsn = new ArrayList<AbstractInsnNode>();
+
+                @SuppressWarnings("unchecked")
+                ListIterator<AbstractInsnNode> iterator = instructions.iterator();
+                while (iterator.hasNext()) {
+                    AbstractInsnNode insnNode = iterator.next();
                     if (insnNode.getOpcode() == Opcodes.MONITORENTER) {
-                        LOG.debug("Detected MonitorEnter in {}::{}, intercepting...", classNode.name, methodNode.name);
-                        instructions.insertBefore(insnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "enteredSynchronizedBlock", "()V"));
-                        // Increment index since we just added an instruction
-                        i++;
+                        LOG.debug("Detected MonitorEnter in {}::{}", classNode.name, methodNode.name);
+                        monitorEnterInsn.add(insnNode);
                     } else if (insnNode.getOpcode() == Opcodes.MONITOREXIT) {
-                        LOG.debug("Detected MonitorExit in {}::{}, intercepting...", classNode.name, methodNode.name);
-                        instructions.insertBefore(insnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "leavingSynchronizedBlock", "()V"));
-                        // Increment index since we just added an instruction
-                        i++;
+                        LOG.debug("Detected MonitorExit in {}::{}", classNode.name, methodNode.name);
+                        monitorExitInsn.add(insnNode);
                     }
+                }
+
+                for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
+                    // Duplicate lock
+                    instructions.insertBefore(monitorEnterInsnNode, new InsnNode(Opcodes.DUP));
+
+                    // Add invokestatic as first instruction of critical section
+                    AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
+                    instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
+                }
+
+                for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
+                    // Duplicate lock
+                    instructions.insertBefore(monitorExitInsnNode, new InsnNode(Opcodes.DUP));
+
+                    // Add invokestatic as last instruction of critical section
+                    instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "leavingSynchronizedBlock", "(Ljava/lang/Object;)V"));
                 }
             }
         }
