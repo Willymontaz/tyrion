@@ -30,28 +30,27 @@ import org.objectweb.asm.tree.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SynchronizedMethodsTransformer implements ClassFileTransformer {
-    static Logger LOG = LoggerFactory.getLogger(SynchronizedMethodsTransformer.class);
+public class LocksTransformer implements ClassFileTransformer {
+    static Logger LOG = LoggerFactory.getLogger(LocksTransformer.class);
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-
         try {
-            return innerTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
-        } catch (RuntimeException e) {
-            LOG.warn("Unable to transform class, returning the class buffer unchanged", e);
+            return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+        } catch (RuntimeException ignored) {
+            LOG.warn("Unable to transform class {}, returning the class buffer unchanged", className);
             return null;
         }
     }
 
-    private byte[] innerTransform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                                  ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+    private byte[] unsafeTransform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+                                   ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         LOG.debug("transform() method called for class {} and classloader {}", className, loader);
         LOG.trace("classfileBuffer = {}", Arrays.toString(classfileBuffer));
         LOG.trace("MonitorEnter={}, MonitorExit={}, Goto={}", ((byte) 194), ((byte) 195), ((byte) 167));
 
-        ClassReader reader = new ClassReader(LockInterceptor.rewriteMonitorEntersAndExits(classfileBuffer));
+        ClassReader reader = new ClassReader(classfileBuffer);
         ClassNode classNode = new ClassNode();
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         ClassVisitor syncMethodsVisitor = new ProfilerClassVisitor(Opcodes.ASM4, writer);
