@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class SynchronizedMethodWrapper extends AdviceAdapter {
+
     static Logger LOG = LoggerFactory.getLogger(SynchronizedMethodWrapper.class);
 
     private final String methodName;
@@ -39,7 +40,9 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     protected void onMethodEnter() {
         LOG.debug("Entering synchronized method {}", methodName);
 
-        mv.visitMethodInsn(INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "enteredSynchronizedMethod", "()V");
+        mv.visitMethodInsn(INVOKESTATIC,
+                "fr/pingtimeout/lockprofiling/LockInterceptor",
+                "enteredSynchronizedMethod", "()V");
 
         super.onMethodEnter();
     }
@@ -48,7 +51,9 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     protected void onMethodExit(int opcode) {
         LOG.debug("Leaving synchronized method {}", methodName);
 
-        mv.visitMethodInsn(INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "leavingSynchronizedMethod", "()V");
+        mv.visitMethodInsn(INVOKESTATIC,
+                "fr/pingtimeout/lockprofiling/LockInterceptor",
+                "leavingSynchronizedMethod", "()V");
 
         super.onMethodExit(opcode);
     }

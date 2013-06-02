@@ -25,7 +25,7 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProfilerClassVisitor extends ClassVisitor {
+class ProfilerClassVisitor extends ClassVisitor {
 
     static Logger LOG = LoggerFactory.getLogger(ProfilerClassVisitor.class);
 
@@ -33,23 +33,28 @@ public class ProfilerClassVisitor extends ClassVisitor {
         super(api, cv);
     }
 
+
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        LOG.trace("Visiting method {} {} {} {} {}", accessToString(access), name, desc, signature, Arrays.toString(exceptions));
+        LOG.trace("Visiting method {} {} {} {} {}",
+                accessToString(access), name, desc, signature, Arrays.toString(exceptions));
+
         final MethodVisitor nextVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
-
         if (isSynchronized(access)) {
-            LOG.trace("Found synchronized method {} {} {} {} {}", accessToString(access), name, desc, signature, Arrays.toString(exceptions));
+            LOG.trace("Found synchronized method {} {} {} {} {}",
+                    accessToString(access), name, desc, signature, Arrays.toString(exceptions));
             return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc);
         }
 
         return nextVisitor;
     }
 
+
     public static boolean isSynchronized(int access) {
         return (access & Opcodes.ACC_SYNCHRONIZED) != 0;
     }
+
 
     public static String accessToString(int access) {
         StringBuilder result = new StringBuilder();
@@ -68,5 +73,4 @@ public class ProfilerClassVisitor extends ClassVisitor {
         if ((access & Opcodes.ACC_VARARGS) != 0) result.append(" varargs");
         return result.toString();
     }
-
 }

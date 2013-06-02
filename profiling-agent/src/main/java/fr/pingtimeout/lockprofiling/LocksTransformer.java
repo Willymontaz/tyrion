@@ -30,12 +30,15 @@ import org.objectweb.asm.tree.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LocksTransformer implements ClassFileTransformer {
+class LocksTransformer implements ClassFileTransformer {
+
     static Logger LOG = LoggerFactory.getLogger(LocksTransformer.class);
+
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+                            ProtectionDomain protectionDomain, byte[] classfileBuffer)
+            throws IllegalClassFormatException {
         try {
             return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
         } catch (RuntimeException ignored) {
@@ -43,6 +46,7 @@ public class LocksTransformer implements ClassFileTransformer {
             return null;
         }
     }
+
 
     private byte[] unsafeTransform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) {
@@ -64,49 +68,83 @@ public class LocksTransformer implements ClassFileTransformer {
         return writer.toByteArray();
     }
 
+
     private void interceptAllSynchronizedBlocks(ClassNode classNode) {
         @SuppressWarnings("unchecked")
         List<MethodNode> methods = classNode.methods;
 
         for (MethodNode methodNode : methods) {
-            InsnList instructions = methodNode.instructions;
-            LOG.debug("interceptAllSynchronizedBlocks for {}::{} that has {} instructions", classNode.name, methodNode.name, instructions.size());
-            if (ProfilerClassVisitor.isSynchronized(methodNode.access)) {
-                LOG.debug("{}::{} is synchronized", classNode.name, methodNode.name);
-            } else {
-                Collection<AbstractInsnNode> monitorEnterInsn = new ArrayList<AbstractInsnNode>();
-                Collection<AbstractInsnNode> monitorExitInsn = new ArrayList<AbstractInsnNode>();
+            interceptAllSynchronizedBlocks(classNode, methodNode);
+        }
+    }
 
-                @SuppressWarnings("unchecked")
-                ListIterator<AbstractInsnNode> iterator = instructions.iterator();
-                while (iterator.hasNext()) {
-                    AbstractInsnNode insnNode = iterator.next();
-                    if (insnNode.getOpcode() == Opcodes.MONITORENTER) {
-                        LOG.debug("Detected MonitorEnter in {}::{}", classNode.name, methodNode.name);
-                        monitorEnterInsn.add(insnNode);
-                    } else if (insnNode.getOpcode() == Opcodes.MONITOREXIT) {
-                        LOG.debug("Detected MonitorExit in {}::{}", classNode.name, methodNode.name);
-                        monitorExitInsn.add(insnNode);
-                    }
-                }
 
-                for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
-                    // Duplicate lock
-                    instructions.insertBefore(monitorEnterInsnNode, new InsnNode(Opcodes.DUP));
+    private void interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
+        InsnList instructions = methodNode.instructions;
+        LOG.debug("interceptAllSynchronizedBlocks for {}::{} that has {} instructions",
+                classNode.name, methodNode.name, instructions.size());
+        if (ProfilerClassVisitor.isSynchronized(methodNode.access)) {
+            LOG.debug("{}::{} is synchronized, nothing to do here", classNode.name, methodNode.name);
+        } else {
+            interceptSynchronizedBlocks(classNode, methodNode, instructions);
+        }
+    }
 
-                    // Add invokestatic as first instruction of critical section
-                    AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
-                    instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
-                }
 
-                for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
-                    // Duplicate lock
-                    instructions.insertBefore(monitorExitInsnNode, new InsnNode(Opcodes.DUP));
+    private void interceptSynchronizedBlocks(ClassNode classNode, MethodNode methodNode, InsnList instructions) {
+        interceptMonitorEnter(classNode, methodNode);
+        interceptMonitorExit(classNode, methodNode);
+    }
 
-                    // Add invokestatic as last instruction of critical section
-                    instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "fr/pingtimeout/lockprofiling/LockInterceptor", "leavingSynchronizedBlock", "(Ljava/lang/Object;)V"));
-                }
+    private void interceptMonitorEnter(ClassNode classNode, MethodNode methodNode) {
+        Collection<AbstractInsnNode> monitorEnterInsn = extractMonitorEnterInsn(classNode, methodNode);
+
+        for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
+            // Duplicate lock
+            methodNode.instructions.insertBefore(monitorEnterInsnNode, new InsnNode(Opcodes.DUP));
+
+            // Add invokestatic as first instruction of critical section
+            AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
+            methodNode.instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
+                    "fr/pingtimeout/lockprofiling/LockInterceptor",
+                    "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
+        }
+    }
+
+    private void interceptMonitorExit(ClassNode classNode, MethodNode methodNode) {
+        Collection<AbstractInsnNode> monitorExitInsn = extractMonitorExitInsn(classNode, methodNode);
+
+        for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
+            // Duplicate lock
+            methodNode.instructions.insertBefore(monitorExitInsnNode, new InsnNode(Opcodes.DUP));
+
+            // Add invokestatic as last instruction of critical section
+            methodNode.instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
+                    "fr/pingtimeout/lockprofiling/LockInterceptor",
+                    "leavingSynchronizedBlock", "(Ljava/lang/Object;)V"));
+        }
+    }
+
+    private Collection<AbstractInsnNode> extractMonitorEnterInsn(ClassNode classNode, MethodNode methodNode) {
+        return extractInstructions(classNode, methodNode, Opcodes.MONITORENTER, "MonitorEnter");
+    }
+
+    private Collection<AbstractInsnNode> extractMonitorExitInsn(ClassNode classNode, MethodNode methodNode) {
+        return extractInstructions(classNode, methodNode, Opcodes.MONITOREXIT, "MonitorExit");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<AbstractInsnNode> extractInstructions(ClassNode classNode, MethodNode methodNode,
+                                                             int instructionToExtract, String instructionAsString) {
+        Collection<AbstractInsnNode> monitorEnterInsn = new ArrayList<AbstractInsnNode>();
+        ListIterator<AbstractInsnNode> iterator = methodNode.instructions.iterator();
+        while (iterator.hasNext()) {
+            AbstractInsnNode insnNode = iterator.next();
+            if (insnNode.getOpcode() == instructionToExtract) {
+                LOG.debug("Detected {} in {}::{}", instructionAsString, classNode.name, methodNode.name);
+                monitorEnterInsn.add(insnNode);
             }
         }
+        return monitorEnterInsn;
     }
 }

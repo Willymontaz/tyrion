@@ -26,21 +26,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LockInterceptor {
-    static ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
-    static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
 
+    static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
+    static ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
+
+    // This method is called dynamically, warnings can be suppressed
+    @SuppressWarnings("unused")
     public static void enteredSynchronizedMethod() {
         trace("just entered a synchronized method", new Throwable().getStackTrace()[1]);
     }
 
+    // This method is called dynamically, warnings can be suppressed
+    @SuppressWarnings("unused")
     public static void leavingSynchronizedMethod() {
         trace("is leaving a synchronized method", new Throwable().getStackTrace()[1]);
     }
 
+    // This method is called dynamically, warnings can be suppressed
+    @SuppressWarnings("unused")
     public static void enteredSynchronizedBlock(Object lock) {
         trace("just entered a synchronized block", lock);
     }
 
+    // This method is called dynamically, warnings can be suppressed
+    @SuppressWarnings("unused")
     public static void leavingSynchronizedBlock(Object lock) {
         trace("is leaving a synchronized block", lock);
     }
@@ -57,5 +66,4 @@ public class LockInterceptor {
         LOG.info("Locked monitors : {}", Arrays.toString(threadInfo.getLockedMonitors()));
         LOG.info("Locked synchronizers : {}", Arrays.toString(threadInfo.getLockedSynchronizers()));
     }
-
 }
