@@ -29,10 +29,6 @@ public class LockInterceptor {
     static ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
 
-    public static byte[] rewriteMonitorEntersAndExits(byte[] classfileBuffer) {
-        return classfileBuffer;
-    }
-
     public static void enteredSynchronizedMethod() {
         trace("just entered a synchronized method", new Throwable().getStackTrace()[1]);
     }
