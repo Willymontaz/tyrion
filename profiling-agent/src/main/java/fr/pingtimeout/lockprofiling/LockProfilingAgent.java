@@ -26,50 +26,42 @@ public class LockProfilingAgent {
 
     static Logger LOG = LoggerFactory.getLogger(LockProfilingAgent.class);
 
-    private static Instrumentation instrumentation;
-
     /**
      * JVM hook to statically load the javaagent at startup.
-     * <p/>
+     *
      * After the Java Virtual Machine (JVM) has initialized, the premain method
      * will be called. Then the real application main method will be called.
      *
-     * @param args
-     * @param inst
+     * @param args The agent's arguments, not used
+     * @param inst The instrumentation class that will be used
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
         LOG.debug("premain() method invoked with args: {} and inst: {}", args, inst);
 
-        instrumentation = inst;
-        instrumentation.addTransformer(new SynchronizedMethodsTransformer());
+        inst.addTransformer(new LocksTransformer());
     }
 
     /**
      * JVM hook to dynamically load javaagent at runtime.
-     * <p/>
+     *
      * The agent class may have an agentmain method for use when the agent is
      * started after VM startup.
      *
-     * @param args
-     * @param inst
+     * @param args The agent's arguments, not used
+     * @param inst The instrumentation class that will be used
      * @throws Exception
      */
     public static void agentmain(String args, Instrumentation inst) throws Exception {
         LOG.debug("agentmain() method invoked with args: {} and inst: {}", args, inst);
 
-        instrumentation = inst;
-        instrumentation.addTransformer(new SynchronizedMethodsTransformer());
+        inst.addTransformer(new LocksTransformer());
     }
 
     /**
-     * Programmatic hook to dynamically load javaagent at runtime.
+     * Hook to dynamically load javaagent at runtime. Not used.
      */
     public static void initialize() {
         LOG.debug("initialize() method invoked");
-
-        if (instrumentation == null) {
-//            MyJavaAgentLoader.loadAgent();
-        }
     }
 }
