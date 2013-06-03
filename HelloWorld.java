@@ -20,7 +20,7 @@ public class HelloWorld {
     private Object lock = new Object();
 
     public synchronized void synchronizedMethod() {
-        System.out.println("Hello ");
+        System.out.print("Hello ");
     }
 
     public void synchronizedBlock() {
