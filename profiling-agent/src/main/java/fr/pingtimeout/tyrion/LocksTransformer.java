@@ -18,6 +18,7 @@
 
 package fr.pingtimeout.tyrion;
 
+import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
@@ -27,6 +28,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.TraceClassVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +44,9 @@ class LocksTransformer implements ClassFileTransformer {
         try {
             return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
         } catch (RuntimeException ignored) {
-            LOG.warn("Unable to transform class {}, returning the class buffer unchanged", className);
+            LOG.warn("Unable to transform class {}, returning the class buffer unchanged. Cause : {}",
+                    className, ignored.getMessage());
+            LOG.warn("Exception: ", ignored);
             return null;
         }
     }
@@ -51,15 +55,15 @@ class LocksTransformer implements ClassFileTransformer {
     private byte[] unsafeTransform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         LOG.debug("transform() method called for class {} and classloader {}", className, loader);
-        LOG.trace("classfileBuffer = {}", Arrays.toString(classfileBuffer));
-        LOG.trace("MonitorEnter={}, MonitorExit={}, Goto={}", ((byte) 194), ((byte) 195), ((byte) 167));
 
         ClassReader reader = new ClassReader(classfileBuffer);
         ClassNode classNode = new ClassNode();
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        ClassVisitor syncMethodsVisitor = new ProfilerClassVisitor(Opcodes.ASM4, writer);
+        ClassVisitor traceClassVisitor = new TraceClassVisitor(writer, new PrintWriter(System.out));
+//        ClassVisitor syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, traceClassVisitor, className);
+        ClassVisitor syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, writer, className);
 
-        // Reader -> ClassNode -> ProfilerClassVisitor -> Writer
+        // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
         reader.accept(classNode, 0);
         interceptAllSynchronizedBlocks(classNode);
         classNode.accept(syncMethodsVisitor);
@@ -83,7 +87,7 @@ class LocksTransformer implements ClassFileTransformer {
         InsnList instructions = methodNode.instructions;
         LOG.debug("interceptAllSynchronizedBlocks for {}::{} that has {} instructions",
                 classNode.name, methodNode.name, instructions.size());
-        if (ProfilerClassVisitor.isSynchronized(methodNode.access)) {
+        if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
             LOG.debug("{}::{} is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
             interceptSynchronizedBlocks(classNode, methodNode, instructions);

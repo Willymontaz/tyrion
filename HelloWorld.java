@@ -23,6 +23,10 @@ public class HelloWorld {
         System.out.print("Hello ");
     }
 
+    public static synchronized void staticSynchronizedMethod() {
+        System.out.print("Hello ");
+    }
+
     public void synchronizedBlock() {
         synchronized (lock) {
             System.out.print("World");
@@ -41,5 +45,6 @@ public class HelloWorld {
 
         hello.synchronizedMethod();
         hello.synchronizedBlock();
+        staticSynchronizedMethod();
     }
 }

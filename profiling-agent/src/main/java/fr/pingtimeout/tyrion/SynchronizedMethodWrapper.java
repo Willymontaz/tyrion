@@ -18,6 +18,7 @@
 
 package fr.pingtimeout.tyrion;
 
+import static fr.pingtimeout.tyrion.SynchronizedMethodVisitor.isStatic;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
@@ -29,20 +30,35 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     static Logger LOG = LoggerFactory.getLogger(SynchronizedMethodWrapper.class);
 
     private final String methodName;
+    private final String className;
 
-    protected SynchronizedMethodWrapper(int api, MethodVisitor mv, int access, String name, String desc) {
+    protected SynchronizedMethodWrapper(int api, MethodVisitor mv, int access, String name, String desc, String className) {
         super(Opcodes.ASM4, mv, access, name, desc);
-        LOG.debug("Instantiating SynchronizedMethodWrapper for method {} {}", name, desc);
+
         this.methodName = name;
+        this.className = className.replaceAll("/", ".");
     }
 
     @Override
     protected void onMethodEnter() {
         LOG.debug("Entering synchronized method {}", methodName);
 
+        if (isStatic(methodAccess)) {
+            // Retrieve Class object that is subject to lock
+            LOG.debug("Injecting Class.forName({})", className);
+            mv.visitLdcInsn(className);
+            mv.visitMethodInsn(INVOKESTATIC,
+                    "java/lang/Class",
+                    "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+        } else {
+            // Retrieve Object that is subject to lock
+            LOG.debug("Injecting this", className);
+            mv.visitVarInsn(ALOAD, 0);
+        }
+
         mv.visitMethodInsn(INVOKESTATIC,
                 "fr/pingtimeout/tyrion/LockInterceptor",
-                "enteredSynchronizedMethod", "()V");
+                "enteredSynchronizedMethod", "(Ljava/lang/Object;)V");
 
         super.onMethodEnter();
     }
@@ -51,9 +67,22 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     protected void onMethodExit(int opcode) {
         LOG.debug("Leaving synchronized method {}", methodName);
 
+        if (isStatic(methodAccess)) {
+            // Retrieve Class object that is subject to lock
+            LOG.debug("Injecting Class.forName({})", className);
+            mv.visitLdcInsn(className);
+            mv.visitMethodInsn(INVOKESTATIC,
+                    "java/lang/Class",
+                    "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+        } else {
+            // Retrieve Object that is subject to lock
+            LOG.debug("Injecting this", className);
+            mv.visitVarInsn(ALOAD, 0);
+        }
+
         mv.visitMethodInsn(INVOKESTATIC,
                 "fr/pingtimeout/tyrion/LockInterceptor",
-                "leavingSynchronizedMethod", "()V");
+                "leavingSynchronizedMethod", "(Ljava/lang/Object;)V");
 
         super.onMethodExit(opcode);
     }

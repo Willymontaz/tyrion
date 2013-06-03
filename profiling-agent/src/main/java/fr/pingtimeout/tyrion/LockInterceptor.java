@@ -18,6 +18,8 @@
 
 package fr.pingtimeout.tyrion;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +27,19 @@ public class LockInterceptor {
 
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
 
+    static Map<Object, Map<Thread, Integer>> USED_LOCKS_COUNTERS = new HashMap<Object, Map<Thread, Integer>>();
+
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
-    public static void enteredSynchronizedMethod() {
-        trace("just entered a synchronized method", new Throwable().getStackTrace()[1]);
+    public static void enteredSynchronizedMethod(Object lock) {
+        trace("just entered a synchronized method", lock);
+
     }
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
-    public static void leavingSynchronizedMethod() {
-        trace("is leaving a synchronized method", new Throwable().getStackTrace()[1]);
+    public static void leavingSynchronizedMethod(Object lock) {
+        trace("is leaving a synchronized method", lock);
     }
 
     // This method is called dynamically, warnings can be suppressed
@@ -51,7 +56,7 @@ public class LockInterceptor {
 
     private static void trace(String intercepted, Object arg) {
         LOG.info("Someone " + intercepted + " !", new Throwable("Here"));
-        LOG.info("Additional argument : {}", arg);
+        LOG.info("Additional argument : '{}' of type '{}'", arg, arg.getClass());
         LOG.info("");
     }
 }

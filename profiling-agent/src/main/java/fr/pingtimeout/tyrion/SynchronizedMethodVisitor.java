@@ -25,12 +25,14 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ProfilerClassVisitor extends ClassVisitor {
+class SynchronizedMethodVisitor extends ClassVisitor {
 
-    static Logger LOG = LoggerFactory.getLogger(ProfilerClassVisitor.class);
+    static Logger LOG = LoggerFactory.getLogger(SynchronizedMethodVisitor.class);
+    private final String className;
 
-    public ProfilerClassVisitor(int api, ClassVisitor cv) {
+    public SynchronizedMethodVisitor(int api, ClassVisitor cv, String className) {
         super(api, cv);
+        this.className = className;
     }
 
 
@@ -44,7 +46,7 @@ class ProfilerClassVisitor extends ClassVisitor {
         if (isSynchronized(access)) {
             LOG.trace("Found synchronized method {} {} {} {} {}",
                     accessToString(access), name, desc, signature, Arrays.toString(exceptions));
-            return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc);
+            return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc, className);
         }
 
         return nextVisitor;
@@ -53,6 +55,10 @@ class ProfilerClassVisitor extends ClassVisitor {
 
     public static boolean isSynchronized(int access) {
         return (access & Opcodes.ACC_SYNCHRONIZED) != 0;
+    }
+
+    public static boolean isStatic(int access) {
+        return (access & Opcodes.ACC_STATIC) != 0;
     }
 
 
