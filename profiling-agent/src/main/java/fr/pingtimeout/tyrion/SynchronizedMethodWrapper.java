@@ -41,18 +41,16 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
 
     @Override
     protected void onMethodEnter() {
-        LOG.debug("Entering synchronized method {}", methodName);
+        LOG.trace("Entering synchronized method {}", methodName);
 
         if (isStatic(methodAccess)) {
             // Retrieve Class object that is subject to lock
-            LOG.debug("Injecting Class.forName({})", className);
             mv.visitLdcInsn(className);
             mv.visitMethodInsn(INVOKESTATIC,
                     "java/lang/Class",
                     "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
         } else {
             // Retrieve Object that is subject to lock
-            LOG.debug("Injecting this", className);
             mv.visitVarInsn(ALOAD, 0);
         }
 
@@ -65,18 +63,16 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
 
     @Override
     protected void onMethodExit(int opcode) {
-        LOG.debug("Leaving synchronized method {}", methodName);
+        LOG.trace("Leaving synchronized method {}", methodName);
 
         if (isStatic(methodAccess)) {
             // Retrieve Class object that is subject to lock
-            LOG.debug("Injecting Class.forName({})", className);
             mv.visitLdcInsn(className);
             mv.visitMethodInsn(INVOKESTATIC,
                     "java/lang/Class",
                     "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
         } else {
             // Retrieve Object that is subject to lock
-            LOG.debug("Injecting this", className);
             mv.visitVarInsn(ALOAD, 0);
         }
 

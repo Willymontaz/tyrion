@@ -37,7 +37,14 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        LOG.debug("premain() method invoked with args: {} and inst: {}", args, inst);
+        String arguments = args == null ? "" : args;
+        LOG.info("Tyrion agent starting with arguments {}", arguments);
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                LockInterceptor.dumpCounters();
+            }
+        });
 
         inst.addTransformer(new LocksTransformer());
     }

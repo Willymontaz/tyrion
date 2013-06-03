@@ -26,37 +26,83 @@ import org.slf4j.LoggerFactory;
 public class LockInterceptor {
 
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
-
     static Map<Object, Map<Thread, Integer>> USED_LOCKS_COUNTERS = new HashMap<Object, Map<Thread, Integer>>();
+
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void enteredSynchronizedMethod(Object lock) {
-        trace("just entered a synchronized method", lock);
-
+        recordSynchronizedAccessOn(lock);
+        printDebugMessage("just entered a synchronized method", lock);
     }
+
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void leavingSynchronizedMethod(Object lock) {
-        trace("is leaving a synchronized method", lock);
+        printDebugMessage("is leaving a synchronized method", lock);
     }
+
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void enteredSynchronizedBlock(Object lock) {
-        trace("just entered a synchronized block", lock);
+        recordSynchronizedAccessOn(lock);
+        printDebugMessage("just entered a synchronized block", lock);
     }
+
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void leavingSynchronizedBlock(Object lock) {
-        trace("is leaving a synchronized block", lock);
+        printDebugMessage("is leaving a synchronized block", lock);
     }
 
-    private static void trace(String intercepted, Object arg) {
-        LOG.info("Someone " + intercepted + " !", new Throwable("Here"));
-        LOG.info("Additional argument : '{}' of type '{}'", arg, arg.getClass());
+
+    private static void recordSynchronizedAccessOn(Object lock) {
+        final Map<Thread, Integer> accessors = getOrCreateLockAccessors(lock);
+        incrementOrCreateLockCounter(accessors);
+    }
+
+
+    private static void incrementOrCreateLockCounter(Map<Thread, Integer> accessors) {
+        final int numberOfAccessesByCurrentThread;
+        if (accessors.containsKey(Thread.currentThread())) {
+            numberOfAccessesByCurrentThread = accessors.get(Thread.currentThread()) + 1;
+        } else {
+            numberOfAccessesByCurrentThread = 1;
+        }
+        accessors.put(Thread.currentThread(), numberOfAccessesByCurrentThread);
+    }
+
+
+    private static Map<Thread, Integer> getOrCreateLockAccessors(Object lock) {
+        final Map<Thread, Integer> accessors;
+        if (USED_LOCKS_COUNTERS.containsKey(lock)) {
+            accessors = USED_LOCKS_COUNTERS.get(lock);
+        } else {
+            accessors = new HashMap<Thread, Integer>();
+            USED_LOCKS_COUNTERS.put(lock, accessors);
+        }
+        return accessors;
+    }
+
+
+    public static void dumpCounters() {
         LOG.info("");
+        LOG.info("");
+        LOG.info("");
+        LOG.info("SUMMARY");
+        for (Map.Entry<Object, Map<Thread, Integer>> lockAndAccessors : USED_LOCKS_COUNTERS.entrySet()) {
+            LOG.info("Accessors of : {}", lockAndAccessors.getKey());
+            for (Map.Entry<Thread, Integer> countersForLock : lockAndAccessors.getValue().entrySet()) {
+                LOG.info("  {} locked {} times", countersForLock.getKey(), countersForLock.getValue());
+            }
+        }
+    }
+
+    private static void printDebugMessage(String intercepted, Object arg) {
+        LOG.debug("Someone {} on {} (type : {})", intercepted, arg, arg.getClass());
+        LOG.trace("Stacktrace : ", new Throwable("Here"));
     }
 }

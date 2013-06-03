@@ -38,14 +38,10 @@ class SynchronizedMethodVisitor extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        LOG.trace("Visiting method {} {} {} {} {}",
-                accessToString(access), name, desc, signature, Arrays.toString(exceptions));
-
         final MethodVisitor nextVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
         if (isSynchronized(access)) {
-            LOG.trace("Found synchronized method {} {} {} {} {}",
-                    accessToString(access), name, desc, signature, Arrays.toString(exceptions));
+            LOG.debug("Found synchronized method : {} {}::{} {}", accessToString(access), className, name, desc);
             return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc, className);
         }
 

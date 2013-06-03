@@ -22,7 +22,10 @@ import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -39,8 +42,7 @@ class LocksTransformer implements ClassFileTransformer {
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                            ProtectionDomain protectionDomain, byte[] classfileBuffer)
-            throws IllegalClassFormatException {
+                            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
             return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
         } catch (RuntimeException ignored) {
@@ -54,8 +56,6 @@ class LocksTransformer implements ClassFileTransformer {
 
     private byte[] unsafeTransform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        LOG.debug("transform() method called for class {} and classloader {}", className, loader);
-
         ClassReader reader = new ClassReader(classfileBuffer);
         ClassNode classNode = new ClassNode();
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -77,30 +77,35 @@ class LocksTransformer implements ClassFileTransformer {
         @SuppressWarnings("unchecked")
         List<MethodNode> methods = classNode.methods;
 
+        int blocksIntercepted = 0;
         for (MethodNode methodNode : methods) {
-            interceptAllSynchronizedBlocks(classNode, methodNode);
+            blocksIntercepted += interceptAllSynchronizedBlocks(classNode, methodNode);
         }
+
+        LOG.info("Intercepted {} synchronized blocks in {}", blocksIntercepted, classNode.name);
     }
 
 
-    private void interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
+    private int interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
+        int blocksIntercepted = 0;
         InsnList instructions = methodNode.instructions;
-        LOG.debug("interceptAllSynchronizedBlocks for {}::{} that has {} instructions",
-                classNode.name, methodNode.name, instructions.size());
         if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
             LOG.debug("{}::{} is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
-            interceptSynchronizedBlocks(classNode, methodNode, instructions);
+            LOG.debug("Intercepting all synchronized blocks of {}::{}", classNode.name, methodNode.name);
+            blocksIntercepted += interceptSynchronizedBlocks(classNode, methodNode, instructions);
         }
+        return blocksIntercepted;
     }
 
 
-    private void interceptSynchronizedBlocks(ClassNode classNode, MethodNode methodNode, InsnList instructions) {
-        interceptMonitorEnter(classNode, methodNode);
+    private int interceptSynchronizedBlocks(ClassNode classNode, MethodNode methodNode, InsnList instructions) {
+        int blocksIntercepted = interceptMonitorEnter(classNode, methodNode);
         interceptMonitorExit(classNode, methodNode);
+        return blocksIntercepted;
     }
 
-    private void interceptMonitorEnter(ClassNode classNode, MethodNode methodNode) {
+    private int interceptMonitorEnter(ClassNode classNode, MethodNode methodNode) {
         Collection<AbstractInsnNode> monitorEnterInsn = extractMonitorEnterInsn(classNode, methodNode);
 
         for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
@@ -113,6 +118,8 @@ class LocksTransformer implements ClassFileTransformer {
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
         }
+
+        return monitorEnterInsn.size();
     }
 
     private void interceptMonitorExit(ClassNode classNode, MethodNode methodNode) {
@@ -145,7 +152,7 @@ class LocksTransformer implements ClassFileTransformer {
         while (iterator.hasNext()) {
             AbstractInsnNode insnNode = iterator.next();
             if (insnNode.getOpcode() == instructionToExtract) {
-                LOG.debug("Detected {} in {}::{}", instructionAsString, classNode.name, methodNode.name);
+                LOG.trace("Detected {} in {}::{}", instructionAsString, classNode.name, methodNode.name);
                 monitorEnterInsn.add(insnNode);
             }
         }
