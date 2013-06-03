@@ -24,7 +24,7 @@
         </layout>
     </appender>
 
-    <logger name="fr.pingtimeout" level="INFO"/>
+    <logger name="fr.pingtimeout.tyrion" level="INFO"/>
 
 
     <root level="debug">

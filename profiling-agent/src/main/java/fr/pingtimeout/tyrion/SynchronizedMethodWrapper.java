@@ -16,7 +16,7 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.lockprofiling;
+package fr.pingtimeout.tyrion;
 
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -41,7 +41,7 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         LOG.debug("Entering synchronized method {}", methodName);
 
         mv.visitMethodInsn(INVOKESTATIC,
-                "fr/pingtimeout/lockprofiling/LockInterceptor",
+                "fr/pingtimeout/tyrion/LockInterceptor",
                 "enteredSynchronizedMethod", "()V");
 
         super.onMethodEnter();
@@ -52,7 +52,7 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         LOG.debug("Leaving synchronized method {}", methodName);
 
         mv.visitMethodInsn(INVOKESTATIC,
-                "fr/pingtimeout/lockprofiling/LockInterceptor",
+                "fr/pingtimeout/tyrion/LockInterceptor",
                 "leavingSynchronizedMethod", "()V");
 
         super.onMethodExit(opcode);

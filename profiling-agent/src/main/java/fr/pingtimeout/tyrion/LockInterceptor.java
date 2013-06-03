@@ -16,7 +16,7 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.lockprofiling;
+package fr.pingtimeout.tyrion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

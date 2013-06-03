@@ -16,7 +16,7 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.lockprofiling;
+package fr.pingtimeout.tyrion;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -106,7 +106,7 @@ class LocksTransformer implements ClassFileTransformer {
             // Add invokestatic as first instruction of critical section
             AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
             methodNode.instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    "fr/pingtimeout/lockprofiling/LockInterceptor",
+                    "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
         }
     }
@@ -120,7 +120,7 @@ class LocksTransformer implements ClassFileTransformer {
 
             // Add invokestatic as last instruction of critical section
             methodNode.instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    "fr/pingtimeout/lockprofiling/LockInterceptor",
+                    "fr/pingtimeout/tyrion/LockInterceptor",
                     "leavingSynchronizedBlock", "(Ljava/lang/Object;)V"));
         }
     }

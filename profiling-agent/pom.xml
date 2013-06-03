@@ -49,8 +49,8 @@
                             </descriptorRefs>
                             <archive>
                                 <manifestEntries>
-                                    <Premain-Class>fr.pingtimeout.lockprofiling.LockProfilingAgent</Premain-Class>
-                                    <Agent-Class>fr.pingtimeout.lockprofiling.LockProfilingAgent</Agent-Class>
+                                    <Premain-Class>fr.pingtimeout.tyrion.LockProfilingAgent</Premain-Class>
+                                    <Agent-Class>fr.pingtimeout.tyrion.LockProfilingAgent</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
                                 </manifestEntries>
