@@ -46,7 +46,7 @@ class LocksTransformer implements ClassFileTransformer {
         } catch (RuntimeException ignored) {
             LOG.warn("Unable to transform class {}, returning the class buffer unchanged. Cause : {}",
                     className, ignored.getMessage());
-            LOG.warn("Exception: ", ignored);
+            LOG.debug("Exception: ", ignored);
             return null;
         }
     }

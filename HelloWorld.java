@@ -24,7 +24,7 @@ public class HelloWorld {
     }
 
     public static synchronized void staticSynchronizedMethod() {
-        System.out.print("Hello ");
+        System.out.println("!!");
     }
 
     public void synchronizedBlock() {
@@ -36,7 +36,8 @@ public class HelloWorld {
 
     public void innerSynchronizedBlock() {
         synchronized (lock) {
-            System.out.println(" !!");
+            System.out.print(" !!");
+            throw new RuntimeException("Foo");
         }
     }
 
