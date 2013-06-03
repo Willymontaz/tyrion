@@ -18,17 +18,12 @@
 
 package fr.pingtimeout.lockprofiling;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LockInterceptor {
 
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
-    static ThreadMXBean THREAD_MX_BEAN = ManagementFactory.getThreadMXBean();
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
@@ -58,12 +53,5 @@ public class LockInterceptor {
         LOG.info("Someone " + intercepted + " !", new Throwable("Here"));
         LOG.info("Additional argument : {}", arg);
         LOG.info("");
-        dumpLocks();
-    }
-
-    private static void dumpLocks() {
-        ThreadInfo threadInfo = THREAD_MX_BEAN.getThreadInfo(Thread.currentThread().getId());
-        LOG.info("Locked monitors : {}", Arrays.toString(threadInfo.getLockedMonitors()));
-        LOG.info("Locked synchronizers : {}", Arrays.toString(threadInfo.getLockedSynchronizers()));
     }
 }

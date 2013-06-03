@@ -16,8 +16,6 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Vector;
-
 public class HelloWorld {
     private Object lock = new Object();
 
