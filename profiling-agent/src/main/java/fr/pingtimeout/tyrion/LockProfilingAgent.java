@@ -37,14 +37,19 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
+        new LockInterceptor();
         String arguments = args == null ? "" : args;
-        LOG.info("Tyrion agent starting with arguments {}", arguments);
+        LOG.info("Tyrion agent starting with arguments '{}'", arguments);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                LockInterceptor.dumpCounters();
+                LOG.info(LocksStatistics.INSTANCE.getStatistics());
             }
         });
+
+        if (LocksStatistics.createInstanceAndRegisterAsMXBean()) {
+            LOG.info("Statistics succesfully registered as JMX bean");
+        }
 
         inst.addTransformer(new LocksTransformer());
     }

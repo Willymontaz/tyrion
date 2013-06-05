@@ -87,20 +87,6 @@ public class LockInterceptor {
         return accessors;
     }
 
-
-    public static void dumpCounters() {
-        LOG.info("");
-        LOG.info("");
-        LOG.info("");
-        LOG.info("SUMMARY");
-        for (Map.Entry<Object, Map<Thread, Integer>> lockAndAccessors : USED_LOCKS_COUNTERS.entrySet()) {
-            LOG.info("Accessors of : {}", lockAndAccessors.getKey());
-            for (Map.Entry<Thread, Integer> countersForLock : lockAndAccessors.getValue().entrySet()) {
-                LOG.info("  {} locked {} times", countersForLock.getKey(), countersForLock.getValue());
-            }
-        }
-    }
-
     private static void printDebugMessage(String intercepted, Object arg) {
         LOG.debug("Someone {} on {} (type : {})", intercepted, arg, arg.getClass());
         LOG.trace("Stacktrace : ", new Throwable("Here"));

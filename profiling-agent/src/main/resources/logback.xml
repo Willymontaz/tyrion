@@ -24,8 +24,7 @@
         </layout>
     </appender>
 
-    <logger name="fr.pingtimeout.tyrion" level="INFO"/>
-
+    <logger name="fr.pingtimeout.tyrion" level="DEBUG"/>
 
     <root level="debug">
         <appender-ref ref="STDOUT"/>

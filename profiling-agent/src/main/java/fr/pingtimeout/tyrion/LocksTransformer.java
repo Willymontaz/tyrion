@@ -39,18 +39,38 @@ class LocksTransformer implements ClassFileTransformer {
 
     static Logger LOG = LoggerFactory.getLogger(LocksTransformer.class);
 
+    static List<String> IGNORED_CLASSES = new ArrayList<String>() {{
+//        add("sun/management/jmxremote");
+//        add("sun/misc");
+//        add("java/");
+//        add("javax/");
+    }};
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+            LOG.debug("Trying to transform {}...", className);
+            if (shouldIgnore(className)) {
+                return null;
+            } else {
+                return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+            }
         } catch (RuntimeException ignored) {
             LOG.warn("Unable to transform class {}, returning the class buffer unchanged. Cause : {}",
                     className, ignored.getMessage());
             LOG.debug("Exception: ", ignored);
             return null;
         }
+    }
+
+
+    private boolean shouldIgnore(String className) {
+        for (String ignoredClassBeggining : IGNORED_CLASSES) {
+            if (className.startsWith(ignoredClassBeggining))
+                return true;
+        }
+        return false;
     }
 
 
@@ -64,6 +84,7 @@ class LocksTransformer implements ClassFileTransformer {
         ClassVisitor syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, writer, className);
 
         // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
+//        reader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         reader.accept(classNode, 0);
         interceptAllSynchronizedBlocks(classNode);
         classNode.accept(syncMethodsVisitor);
@@ -113,7 +134,8 @@ class LocksTransformer implements ClassFileTransformer {
             methodNode.instructions.insertBefore(monitorEnterInsnNode, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as first instruction of critical section
-            AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
+            AbstractInsnNode nextInsnNode = monitorEnterInsnNode;
+//            AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
             methodNode.instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));

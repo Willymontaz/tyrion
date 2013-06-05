@@ -37,15 +37,24 @@ public class HelloWorld {
     public void innerSynchronizedBlock() {
         synchronized (lock) {
             System.out.print(" !!");
-            throw new RuntimeException("Foo");
         }
     }
 
-    public static void main(String... args) {
+    public static void main(String... args) throws Exception {
         HelloWorld hello = new HelloWorld();
 
         hello.synchronizedMethod();
         hello.synchronizedBlock();
         staticSynchronizedMethod();
+
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("");
+        System.out.println("Press enter...");
+        System.in.read();
     }
 }
