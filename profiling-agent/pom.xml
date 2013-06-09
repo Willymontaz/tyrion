@@ -51,6 +51,7 @@
                                     <Agent-Class>fr.pingtimeout.tyrion.LockProfilingAgent</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                                    <Boot-Class-Path>profiling-agent-1.0-SNAPSHOT-jar-with-dependencies.jar</Boot-Class-Path>
                                 </manifestEntries>
                             </archive>
                         </configuration>

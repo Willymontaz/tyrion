@@ -39,38 +39,19 @@ class LocksTransformer implements ClassFileTransformer {
 
     static Logger LOG = LoggerFactory.getLogger(LocksTransformer.class);
 
-    static List<String> IGNORED_CLASSES = new ArrayList<String>() {{
-//        add("sun/management/jmxremote");
-//        add("sun/misc");
-//        add("java/");
-//        add("javax/");
-    }};
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
             LOG.debug("Trying to transform {}...", className);
-            if (shouldIgnore(className)) {
-                return null;
-            } else {
-                return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
-            }
+            return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer.clone());
         } catch (RuntimeException ignored) {
             LOG.warn("Unable to transform class {}, returning the class buffer unchanged. Cause : {}",
                     className, ignored.getMessage());
             LOG.debug("Exception: ", ignored);
-            return null;
+            return classfileBuffer;
         }
-    }
-
-
-    private boolean shouldIgnore(String className) {
-        for (String ignoredClassBeggining : IGNORED_CLASSES) {
-            if (className.startsWith(ignoredClassBeggining))
-                return true;
-        }
-        return false;
     }
 
 
@@ -86,7 +67,7 @@ class LocksTransformer implements ClassFileTransformer {
         // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
 //        reader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         reader.accept(classNode, 0);
-        interceptAllSynchronizedBlocks(classNode);
+//        interceptAllSynchronizedBlocks(classNode);
         classNode.accept(syncMethodsVisitor);
 
 
@@ -131,11 +112,16 @@ class LocksTransformer implements ClassFileTransformer {
 
         for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
             // Duplicate lock
-            methodNode.instructions.insertBefore(monitorEnterInsnNode, new InsnNode(Opcodes.DUP));
+            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorEnterInsnNode);
+            LOG.debug("Inserting DUP before {}", nodeAfterDup);
+            methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as first instruction of critical section
-            AbstractInsnNode nextInsnNode = monitorEnterInsnNode;
-//            AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
+//            AbstractInsnNode nextInsnNode = monitorEnterInsnNode;
+
+//            AbstractInsnNode nextInsnNode = getNodeAfterDup(monitorEnterInsnNode);
+            AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
+            LOG.debug("Inserting call to enteredSynchronizedBlock before {}", nextInsnNode);
             methodNode.instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
@@ -149,13 +135,25 @@ class LocksTransformer implements ClassFileTransformer {
 
         for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
             // Duplicate lock
-            methodNode.instructions.insertBefore(monitorExitInsnNode, new InsnNode(Opcodes.DUP));
+            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorExitInsnNode);
+            LOG.debug("Inserting DUP before {}", nodeAfterDup);
+            methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as last instruction of critical section
             methodNode.instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "leavingSynchronizedBlock", "(Ljava/lang/Object;)V"));
         }
+    }
+
+    private AbstractInsnNode getNodeAfterDup(AbstractInsnNode monitorEnterInsnNode) {
+        AbstractInsnNode previousNode = monitorEnterInsnNode.getPrevious();
+        LOG.debug("Checking if {} is ASTORE", previousNode);
+        while (previousNode.getOpcode() == Opcodes.ASTORE) {
+            previousNode = previousNode.getPrevious();
+            LOG.debug("Checking if {} is ASTORE", previousNode);
+        }
+        return previousNode.getNext();
     }
 
     private Collection<AbstractInsnNode> extractMonitorEnterInsn(ClassNode classNode, MethodNode methodNode) {
