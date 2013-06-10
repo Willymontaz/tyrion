@@ -47,6 +47,8 @@ public class Lock {
 
 
     public String toString() {
-        return target + " is accessed by " + accessors;
+        String targetToString = target.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(target));
+
+        return targetToString + " is accessed by " + accessors;
     }
 }
