@@ -19,7 +19,6 @@
 package fr.pingtimeout.tyrion;
 
 import java.lang.management.ManagementFactory;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +26,8 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import fr.pingtimeout.tyrion.data.Lock;
+import fr.pingtimeout.tyrion.data.LockFactory;
 
 public enum LocksStatistics implements LocksStatisticsMXBean {
     INSTANCE;
@@ -58,12 +59,8 @@ public enum LocksStatistics implements LocksStatisticsMXBean {
     @Override
     public String getStatistics() {
         StringBuffer result = new StringBuffer();
-        for (Map.Entry<Object, Map<Thread, Integer>> entry : LockInterceptor.USED_LOCKS_COUNTERS.entrySet()) {
-            result.append(entry.getKey()).append(" is accessed by ");
-            for (Map.Entry<Thread, Integer> accessEntry : entry.getValue().entrySet()) {
-                result.append(accessEntry.getKey()).append(" ").append(accessEntry.getValue()).append(" times, ");
-            }
-            result.append("\n");
+        for (Lock lock : LockFactory.allLocks()) {
+            result.append(lock.toString()).append("\n");
         }
         return result.toString();
     }

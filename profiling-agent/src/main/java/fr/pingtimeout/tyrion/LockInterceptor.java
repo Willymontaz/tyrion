@@ -18,16 +18,16 @@
 
 package fr.pingtimeout.tyrion;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import fr.pingtimeout.tyrion.data.Lock;
+import fr.pingtimeout.tyrion.data.LockFactory;
 
 public class LockInterceptor {
 
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
-    static Map<Object, Map<Thread, Integer>> USED_LOCKS_COUNTERS = new IdentityHashMap<Object, Map<Thread, Integer>>();
 
 
     // This method is called dynamically, warnings can be suppressed
@@ -60,33 +60,11 @@ public class LockInterceptor {
     }
 
 
-    private static void recordSynchronizedAccessOn(Object lock) {
-        final Map<Thread, Integer> accessors = getOrCreateLockAccessors(lock);
-        incrementOrCreateLockCounter(accessors);
+    private static void recordSynchronizedAccessOn(Object target) {
+        Lock lock = LockFactory.getInstanceFrom(target);
+        lock.addAccessFrom(Thread.currentThread());
     }
 
-
-    private static void incrementOrCreateLockCounter(Map<Thread, Integer> accessors) {
-        final int numberOfAccessesByCurrentThread;
-        if (accessors.containsKey(Thread.currentThread())) {
-            numberOfAccessesByCurrentThread = accessors.get(Thread.currentThread()) + 1;
-        } else {
-            numberOfAccessesByCurrentThread = 1;
-        }
-        accessors.put(Thread.currentThread(), numberOfAccessesByCurrentThread);
-    }
-
-
-    private static Map<Thread, Integer> getOrCreateLockAccessors(Object lock) {
-        final Map<Thread, Integer> accessors;
-        if (USED_LOCKS_COUNTERS.containsKey(lock)) {
-            accessors = USED_LOCKS_COUNTERS.get(lock);
-        } else {
-            accessors = new IdentityHashMap<Thread, Integer>();
-            USED_LOCKS_COUNTERS.put(lock, accessors);
-        }
-        return accessors;
-    }
 
     private static void printDebugMessage(String intercepted, Object arg) {
         LOG.debug("Someone {} on {} (type : {})", intercepted, arg, arg.getClass());
