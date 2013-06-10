@@ -19,6 +19,7 @@
 package fr.pingtimeout.tyrion;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class LockInterceptor {
 
     static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
-    static Map<Object, Map<Thread, Integer>> USED_LOCKS_COUNTERS = new HashMap<Object, Map<Thread, Integer>>();
+    static Map<Object, Map<Thread, Integer>> USED_LOCKS_COUNTERS = new IdentityHashMap<Object, Map<Thread, Integer>>();
 
 
     // This method is called dynamically, warnings can be suppressed
@@ -81,7 +82,7 @@ public class LockInterceptor {
         if (USED_LOCKS_COUNTERS.containsKey(lock)) {
             accessors = USED_LOCKS_COUNTERS.get(lock);
         } else {
-            accessors = new HashMap<Thread, Integer>();
+            accessors = new IdentityHashMap<Thread, Integer>();
             USED_LOCKS_COUNTERS.put(lock, accessors);
         }
         return accessors;
