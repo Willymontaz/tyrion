@@ -18,10 +18,11 @@
 
 package fr.pingtimeout.tyrion.data;
 
+import java.io.Serializable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public class Lock {
+public class LockAccesses {
 
     public static final int EXPECTED_CONTENTION = 4;
 
@@ -30,7 +31,7 @@ public class Lock {
     private final Map<Thread, Access> accessors = new IdentityHashMap<>(EXPECTED_CONTENTION);
 
 
-    Lock(Object lock) {
+    LockAccesses(Object lock) {
         this.target = lock;
     }
 
@@ -49,6 +50,6 @@ public class Lock {
     public String toString() {
         String targetToString = target.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(target));
 
-        return targetToString + " is accessed by " + accessors;
+        return targetToString + ":" + accessors;
     }
 }

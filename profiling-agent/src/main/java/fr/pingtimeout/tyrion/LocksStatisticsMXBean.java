@@ -18,8 +18,9 @@
 
 package fr.pingtimeout.tyrion;
 
-import java.util.Map;
+import java.util.Collection;
+import fr.pingtimeout.tyrion.data.LockAccesses;
 
 public interface LocksStatisticsMXBean {
-    String getStatistics();
+    String dumpLocks();
 }

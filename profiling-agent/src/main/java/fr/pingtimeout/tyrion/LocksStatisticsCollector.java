@@ -18,6 +18,8 @@
 
 package fr.pingtimeout.tyrion;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.lang.management.ManagementFactory;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,13 +28,13 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import fr.pingtimeout.tyrion.data.Lock;
+import fr.pingtimeout.tyrion.data.LockAccesses;
 import fr.pingtimeout.tyrion.data.LockFactory;
 
-public enum LocksStatistics implements LocksStatisticsMXBean {
+public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
     INSTANCE;
 
-    static Logger LOG = LoggerFactory.getLogger(LocksStatistics.class);
+    static Logger LOG = LoggerFactory.getLogger(LocksStatisticsCollector.class);
 
     public static void createInstanceAndRegisterAsMXBeanLater() {
         long fiveSecondsInMillis = TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
@@ -40,30 +42,26 @@ public enum LocksStatistics implements LocksStatisticsMXBean {
         TimerTask registerAsMXBean = new TimerTask() {
             @Override
             public void run() {
-                LocksStatistics.INSTANCE.registerAsMXBean();
+                LocksStatisticsCollector.INSTANCE.registerAsMXBean();
             }
         };
 
         timer.schedule(registerAsMXBean, fiveSecondsInMillis);
     }
 
-    public static boolean createInstanceAndRegisterAsMXBean() {
+    public static boolean createInstanceAndRegisterAsMXBean(String outputFile) {
         try {
-            LocksStatistics.INSTANCE.registerAsMXBean();
+            INSTANCE.registerAsMXBean();
+            INSTANCE.outputFile = outputFile;
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    @Override
-    public String getStatistics() {
-        StringBuffer result = new StringBuffer();
-        for (Lock lock : LockFactory.allLocks()) {
-            result.append(lock.toString()).append("\n");
-        }
-        return result.toString();
-    }
+
+    private String outputFile;
+
 
     private void registerAsMXBean() {
         try {
@@ -72,8 +70,29 @@ public enum LocksStatistics implements LocksStatisticsMXBean {
             MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
             platformMBeanServer.registerMBean(this, objectName);
         } catch (Exception ignored) {
-            LOG.warn("Unable to register LocksStatistics as a MXBean, data will not be available through JMX. Cause : {}", ignored.getMessage());
+            LOG.warn("Unable to register LocksStatisticsCollector as a MXBean, data will not be available through JMX. Cause : {}", ignored.getMessage());
             LOG.debug("Stacktrace : ", ignored);
         }
+    }
+
+
+    @Override
+    public String dumpLocks() {
+        String result = "";
+        if (outputFile.length() != 0) {
+            try (FileWriter fileWriter = new FileWriter(outputFile);
+                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+                for (LockAccesses lockAccesses : LockFactory.allLocks()) {
+                    bufferedWriter.write(lockAccesses.toString());
+                    bufferedWriter.write("\n");
+                }
+                result = "Successfully dumped locks statistics";
+            } catch (Exception ignored) {
+                result = "Could not dump locks";
+                LOG.warn(result);
+                LOG.debug("Stacktrace : ", ignored);
+            }
+        }
+        return result;
     }
 }

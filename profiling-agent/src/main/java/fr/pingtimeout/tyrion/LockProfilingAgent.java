@@ -41,13 +41,14 @@ public class LockProfilingAgent {
         String arguments = args == null ? "" : args;
         LOG.info("Tyrion agent starting with arguments '{}'", arguments);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                LOG.info(LocksStatistics.INSTANCE.getStatistics());
-            }
-        });
+        final String outputFile;
+        if(arguments.startsWith("outputFile=")) {
+            outputFile = arguments.substring("outputFile=".length());
+        } else {
+            outputFile = "";
+        }
 
-        if (LocksStatistics.createInstanceAndRegisterAsMXBean()) {
+        if (LocksStatisticsCollector.createInstanceAndRegisterAsMXBean(outputFile)) {
             LOG.info("Statistics succesfully registered as JMX bean");
         }
 

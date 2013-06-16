@@ -18,11 +18,9 @@
 
 package fr.pingtimeout.tyrion;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import fr.pingtimeout.tyrion.data.Lock;
+import fr.pingtimeout.tyrion.data.LockAccesses;
 import fr.pingtimeout.tyrion.data.LockFactory;
 
 public class LockInterceptor {
@@ -61,8 +59,8 @@ public class LockInterceptor {
 
 
     private static void recordSynchronizedAccessOn(Object target) {
-        Lock lock = LockFactory.getInstanceFrom(target);
-        lock.addAccessFrom(Thread.currentThread());
+        LockAccesses lockAccesses = LockFactory.getInstanceFrom(target);
+        lockAccesses.addAccessFrom(Thread.currentThread());
     }
 
 
