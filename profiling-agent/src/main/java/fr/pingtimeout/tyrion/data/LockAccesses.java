@@ -18,13 +18,15 @@
 
 package fr.pingtimeout.tyrion.data;
 
-import java.io.Serializable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class LockAccesses {
 
     public static final int EXPECTED_CONTENTION = 4;
+    public static final char TARGET_SEPARATOR = '\u001D';
+    public static final char ACCESS_SEPARATOR = '\u001E';
+    public static final char COUNT_SEPARATOR = '\u001F';
 
     private final Object target;
 
@@ -46,6 +48,23 @@ public class LockAccesses {
         accessors.put(accessor, newAccess);
     }
 
+
+    public String toDumpString() {
+        StringBuilder result = new StringBuilder()
+                .append(target.getClass().getName())
+                .append('@')
+                .append(Integer.toHexString(System.identityHashCode(target)))
+                .append(TARGET_SEPARATOR);
+
+        for (Map.Entry<Thread, Access> threadAccessEntry : accessors.entrySet()) {
+            result.append(threadAccessEntry.getKey())
+                    .append(COUNT_SEPARATOR)
+                    .append(threadAccessEntry.getValue().getNumberOfAccesses())
+                    .append(ACCESS_SEPARATOR);
+        }
+
+        return result.substring(0, result.length()-1);
+    }
 
     public String toString() {
         String targetToString = target.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(target));

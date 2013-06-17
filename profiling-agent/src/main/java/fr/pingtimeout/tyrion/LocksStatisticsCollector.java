@@ -83,7 +83,7 @@ public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
             try (FileWriter fileWriter = new FileWriter(outputFile);
                  BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
                 for (LockAccesses lockAccesses : LockFactory.allLocks()) {
-                    bufferedWriter.write(lockAccesses.toString());
+                    bufferedWriter.write(lockAccesses.toDumpString());
                     bufferedWriter.write("\n");
                 }
                 result = "Successfully dumped locks statistics";

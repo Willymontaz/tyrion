@@ -38,6 +38,10 @@ public class Access {
     }
 
 
+    public int getNumberOfAccesses() {
+        return numberOfAccesses;
+    }
+
     @Override
     public String toString() {
         return numberOfAccesses + " times";
