@@ -26,7 +26,7 @@ public class LockAccesses {
     public static final int EXPECTED_CONTENTION = 4;
     public static final char TARGET_SEPARATOR = '\u001D';
     public static final char ACCESS_SEPARATOR = '\u001E';
-    public static final char COUNT_SEPARATOR = '\u001F';
+    public static final char UNIT_SEPARATOR = '\u001F';
 
     private final Object target;
 
@@ -58,7 +58,7 @@ public class LockAccesses {
 
         for (Map.Entry<Thread, Access> threadAccessEntry : accessors.entrySet()) {
             result.append(threadAccessEntry.getKey())
-                    .append(COUNT_SEPARATOR)
+                    .append(UNIT_SEPARATOR)
                     .append(threadAccessEntry.getValue().getNumberOfAccesses())
                     .append(ACCESS_SEPARATOR);
         }
