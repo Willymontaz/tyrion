@@ -18,6 +18,7 @@
 
 package fr.pingtimeout.tyrion;
 
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import fr.pingtimeout.tyrion.data.LockAccesses;
@@ -31,30 +32,40 @@ public class LockInterceptor {
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void enteredSynchronizedMethod(Object lock) {
+        StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedAccessOn(lock);
-        printDebugMessage("just entered a synchronized method", lock);
+        printDebugMessage("just entered a synchronized method", lock, filteredStackTrace);
     }
 
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void leavingSynchronizedMethod(Object lock) {
-        printDebugMessage("is leaving a synchronized method", lock);
+        StackTraceElement[] filteredStackTrace = createStackTrace();
+        printDebugMessage("is leaving a synchronized method", lock, filteredStackTrace);
     }
 
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void enteredSynchronizedBlock(Object lock) {
+        StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedAccessOn(lock);
-        printDebugMessage("just entered a synchronized block", lock);
+        printDebugMessage("just entered a synchronized block", lock, filteredStackTrace);
     }
-
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void leavingSynchronizedBlock(Object lock) {
-        printDebugMessage("is leaving a synchronized block", lock);
+        StackTraceElement[] filteredStackTrace = createStackTrace();
+        printDebugMessage("is leaving a synchronized block", lock, filteredStackTrace);
+    }
+
+
+    private static StackTraceElement[] createStackTrace() {
+        Throwable exception = new Throwable("");
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
     }
 
 
@@ -64,8 +75,8 @@ public class LockInterceptor {
     }
 
 
-    private static void printDebugMessage(String intercepted, Object arg) {
-        LOG.debug("Someone {} on {} (type : {})", intercepted, arg, arg.getClass());
-        LOG.trace("Stacktrace : ", new Throwable("Here"));
+    private static void printDebugMessage(String intercepted, Object arg, StackTraceElement[] stacktrace) {
+//        LOG.debug("Someone {} on {} (type : {})", intercepted, arg, arg.getClass());
+//        LOG.trace("Stacktrace : {}", Arrays.toString(stacktrace));
     }
 }
