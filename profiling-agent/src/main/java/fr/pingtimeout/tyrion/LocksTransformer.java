@@ -67,7 +67,7 @@ class LocksTransformer implements ClassFileTransformer {
         // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
 //        reader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         reader.accept(classNode, 0);
-//        interceptAllSynchronizedBlocks(classNode);
+        interceptAllSynchronizedBlocks(classNode);
         classNode.accept(syncMethodsVisitor);
 
 
@@ -89,22 +89,22 @@ class LocksTransformer implements ClassFileTransformer {
 
 
     private int interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
-        int blocksIntercepted = 0;
+        int numberOfBlocksIntercepted = 0;
         InsnList instructions = methodNode.instructions;
         if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
             LOG.debug("{}::{} is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
             LOG.debug("Intercepting all synchronized blocks of {}::{}", classNode.name, methodNode.name);
-            blocksIntercepted += interceptSynchronizedBlocks(classNode, methodNode, instructions);
+            numberOfBlocksIntercepted += interceptSynchronizedBlocks(classNode, methodNode, instructions);
         }
-        return blocksIntercepted;
+        return numberOfBlocksIntercepted;
     }
 
 
     private int interceptSynchronizedBlocks(ClassNode classNode, MethodNode methodNode, InsnList instructions) {
-        int blocksIntercepted = interceptMonitorEnter(classNode, methodNode);
+        int numberOfBlocksIntercepted = interceptMonitorEnter(classNode, methodNode);
         interceptMonitorExit(classNode, methodNode);
-        return blocksIntercepted;
+        return numberOfBlocksIntercepted;
     }
 
     private int interceptMonitorEnter(ClassNode classNode, MethodNode methodNode) {
@@ -112,17 +112,18 @@ class LocksTransformer implements ClassFileTransformer {
 
         for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
             // Duplicate lock
-            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorEnterInsnNode);
+//            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorEnterInsnNode);
+            AbstractInsnNode nodeAfterDup = monitorEnterInsnNode;
             LOG.debug("Inserting DUP before {}", nodeAfterDup);
             methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as first instruction of critical section
-//            AbstractInsnNode nextInsnNode = monitorEnterInsnNode;
+//            AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode;
 
-//            AbstractInsnNode nextInsnNode = getNodeAfterDup(monitorEnterInsnNode);
-            AbstractInsnNode nextInsnNode = monitorEnterInsnNode.getNext();
-            LOG.debug("Inserting call to enteredSynchronizedBlock before {}", nextInsnNode);
-            methodNode.instructions.insertBefore(nextInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
+//            AbstractInsnNode nodeAfterInterception = getNodeAfterDup(monitorEnterInsnNode);
+            AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode.getNext();
+            LOG.debug("Inserting call to enteredSynchronizedBlock before {}", nodeAfterInterception);
+            methodNode.instructions.insertBefore(nodeAfterInterception, new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
         }
@@ -135,7 +136,8 @@ class LocksTransformer implements ClassFileTransformer {
 
         for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
             // Duplicate lock
-            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorExitInsnNode);
+//            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorExitInsnNode);
+            AbstractInsnNode nodeAfterDup = monitorExitInsnNode;
             LOG.debug("Inserting DUP before {}", nodeAfterDup);
             methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
 
