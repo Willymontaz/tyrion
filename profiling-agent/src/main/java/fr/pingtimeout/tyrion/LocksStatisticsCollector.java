@@ -18,23 +18,19 @@
 
 package fr.pingtimeout.tyrion;
 
+import fr.pingtimeout.tyrion.data.LockFactory;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.lang.management.ManagementFactory;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import fr.pingtimeout.tyrion.data.LockAccesses;
-import fr.pingtimeout.tyrion.data.LockFactory;
 
 public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
     INSTANCE;
-
-    static Logger LOG = LoggerFactory.getLogger(LocksStatisticsCollector.class);
 
     public static void createInstanceAndRegisterAsMXBeanLater() {
         long fiveSecondsInMillis = TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
@@ -70,8 +66,8 @@ public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
             MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
             platformMBeanServer.registerMBean(this, objectName);
         } catch (Exception ignored) {
-            LOG.warn("Unable to register LocksStatisticsCollector as a MXBean, data will not be available through JMX. Cause : {}", ignored.getMessage());
-            LOG.debug("Stacktrace : ", ignored);
+            Logger.warn("Unable to register LocksStatisticsCollector as a MXBean, data will not be available through JMX. Cause : %s", ignored.getMessage());
+            Logger.debug(ignored);
         }
     }
 
@@ -82,15 +78,12 @@ public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
         if (outputFile.length() != 0) {
             try (FileWriter fileWriter = new FileWriter(outputFile);
                  BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
-                for (LockAccesses lockAccesses : LockFactory.allLocks()) {
-                    bufferedWriter.write(lockAccesses.toDumpString());
-                    bufferedWriter.write("\n");
-                }
+                bufferedWriter.write(LockFactory.dumpAllLocksToJSON());
                 result = "Successfully dumped locks statistics";
             } catch (Exception ignored) {
                 result = "Could not dump locks";
-                LOG.warn(result);
-                LOG.debug("Stacktrace : ", ignored);
+                Logger.warn(result);
+                Logger.debug("Stacktrace : ", ignored);
             }
         }
         return result;

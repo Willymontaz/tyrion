@@ -18,16 +18,12 @@
 
 package fr.pingtimeout.tyrion;
 
-import java.util.Arrays;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class SynchronizedMethodVisitor extends ClassVisitor {
 
-    static Logger LOG = LoggerFactory.getLogger(SynchronizedMethodVisitor.class);
     private final String className;
 
     public SynchronizedMethodVisitor(int api, ClassVisitor cv, String className) {
@@ -41,7 +37,7 @@ class SynchronizedMethodVisitor extends ClassVisitor {
         final MethodVisitor nextVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
         if (isSynchronized(access)) {
-            LOG.debug("Found synchronized method : {} {}::{} {}", accessToString(access), className, name, desc);
+            Logger.debug("Found synchronized method : %s %s::%s %s", accessToString(access), className, name, desc);
             return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc, className);
         }
 

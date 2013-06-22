@@ -25,4 +25,9 @@ public class LockFactory {
     public static Collection<LockAccesses> allLocks() {
         return EXISTING_LOCKS.values();
     }
+
+
+    public static String dumpAllLocksToJSON() {
+        return "";
+    }
 }

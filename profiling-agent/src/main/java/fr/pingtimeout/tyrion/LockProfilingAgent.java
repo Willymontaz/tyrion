@@ -19,12 +19,8 @@
 package fr.pingtimeout.tyrion;
 
 import java.lang.instrument.Instrumentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LockProfilingAgent {
-
-    static Logger LOG = LoggerFactory.getLogger(LockProfilingAgent.class);
 
     /**
      * JVM hook to statically load the javaagent at startup.
@@ -39,42 +35,19 @@ public class LockProfilingAgent {
     public static void premain(String args, Instrumentation inst) throws Exception {
         new LockInterceptor();
         String arguments = args == null ? "" : args;
-        LOG.info("Tyrion agent starting with arguments '{}'", arguments);
+        Logger.info("Tyrion agent starting with arguments '%s'", arguments);
 
         final String outputFile;
-        if(arguments.startsWith("outputFile=")) {
+        if (arguments.startsWith("outputFile=")) {
             outputFile = arguments.substring("outputFile=".length());
         } else {
             outputFile = "";
         }
 
         if (LocksStatisticsCollector.createInstanceAndRegisterAsMXBean(outputFile)) {
-            LOG.info("Statistics succesfully registered as JMX bean");
+            Logger.info("Statistics succesfully registered as JMX bean");
         }
 
         inst.addTransformer(new LocksTransformer());
-    }
-
-    /**
-     * JVM hook to dynamically load javaagent at runtime.
-     * <p/>
-     * The agent class may have an agentmain method for use when the agent is
-     * started after VM startup.
-     *
-     * @param args The agent's arguments, not used
-     * @param inst The instrumentation class that will be used
-     * @throws Exception
-     */
-    public static void agentmain(String args, Instrumentation inst) throws Exception {
-        LOG.debug("agentmain() method invoked with args: {} and inst: {}", args, inst);
-
-        inst.addTransformer(new LocksTransformer());
-    }
-
-    /**
-     * Hook to dynamically load javaagent at runtime. Not used.
-     */
-    public static void initialize() {
-        LOG.debug("initialize() method invoked");
     }
 }

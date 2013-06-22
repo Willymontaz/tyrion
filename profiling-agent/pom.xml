@@ -73,10 +73,5 @@
             <artifactId>asm-all</artifactId>
             <version>RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>RELEASE</version>
-        </dependency>
     </dependencies>
 </project>

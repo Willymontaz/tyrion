@@ -18,16 +18,13 @@
 
 package fr.pingtimeout.tyrion;
 
-import static fr.pingtimeout.tyrion.SynchronizedMethodVisitor.isStatic;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static fr.pingtimeout.tyrion.SynchronizedMethodVisitor.isStatic;
 
 class SynchronizedMethodWrapper extends AdviceAdapter {
-
-    static Logger LOG = LoggerFactory.getLogger(SynchronizedMethodWrapper.class);
 
     private final String methodName;
     private final String className;
@@ -41,7 +38,7 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
 
     @Override
     protected void onMethodEnter() {
-        LOG.trace("Entering synchronized method {}", methodName);
+        Logger.debug("Entering synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
             // Retrieve Class object that is subject to lock
@@ -63,7 +60,7 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
 
     @Override
     protected void onMethodExit(int opcode) {
-        LOG.trace("Leaving synchronized method {}", methodName);
+        Logger.debug("Leaving synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
             // Retrieve Class object that is subject to lock

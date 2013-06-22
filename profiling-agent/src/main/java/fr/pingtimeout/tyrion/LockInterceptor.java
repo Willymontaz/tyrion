@@ -18,16 +18,12 @@
 
 package fr.pingtimeout.tyrion;
 
-import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import fr.pingtimeout.tyrion.data.LockAccesses;
 import fr.pingtimeout.tyrion.data.LockFactory;
 
+import java.util.Arrays;
+
 public class LockInterceptor {
-
-    static Logger LOG = LoggerFactory.getLogger(LockInterceptor.class);
-
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")

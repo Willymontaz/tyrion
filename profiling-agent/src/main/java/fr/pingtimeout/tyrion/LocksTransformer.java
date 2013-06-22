@@ -18,6 +18,13 @@
 
 package fr.pingtimeout.tyrion;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.TraceClassVisitor;
+
 import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -26,30 +33,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.TraceClassVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class LocksTransformer implements ClassFileTransformer {
-
-    static Logger LOG = LoggerFactory.getLogger(LocksTransformer.class);
-
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            LOG.debug("Trying to transform {}...", className);
+            Logger.debug("Trying to transform %s...", className);
             return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer.clone());
         } catch (RuntimeException ignored) {
-            LOG.warn("Unable to transform class {}, returning the class buffer unchanged. Cause : {}",
+            Logger.warn("Unable to transform class %s, returning the class buffer unchanged. Cause : %s",
                     className, ignored.getMessage());
-            LOG.debug("Exception: ", ignored);
+            Logger.debug("Exception: ", ignored);
             return classfileBuffer;
         }
     }
@@ -84,7 +80,8 @@ class LocksTransformer implements ClassFileTransformer {
             blocksIntercepted += interceptAllSynchronizedBlocks(classNode, methodNode);
         }
 
-        LOG.info("Intercepted {} synchronized blocks in {}", blocksIntercepted, classNode.name);
+        if (blocksIntercepted != 0)
+            Logger.debug("Intercepted %s synchronized blocks in %s", blocksIntercepted, classNode.name);
     }
 
 
@@ -92,9 +89,9 @@ class LocksTransformer implements ClassFileTransformer {
         int numberOfBlocksIntercepted = 0;
         InsnList instructions = methodNode.instructions;
         if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
-            LOG.debug("{}::{} is synchronized, nothing to do here", classNode.name, methodNode.name);
+            Logger.debug("%s::%s is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
-            LOG.debug("Intercepting all synchronized blocks of {}::{}", classNode.name, methodNode.name);
+            Logger.debug("Intercepting all synchronized blocks of %s::%s", classNode.name, methodNode.name);
             numberOfBlocksIntercepted += interceptSynchronizedBlocks(classNode, methodNode, instructions);
         }
         return numberOfBlocksIntercepted;
@@ -114,7 +111,7 @@ class LocksTransformer implements ClassFileTransformer {
             // Duplicate lock
 //            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorEnterInsnNode);
             AbstractInsnNode nodeAfterDup = monitorEnterInsnNode;
-            LOG.debug("Inserting DUP before {}", nodeAfterDup);
+            Logger.debug("Inserting DUP before %s", nodeAfterDup);
             methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as first instruction of critical section
@@ -122,7 +119,7 @@ class LocksTransformer implements ClassFileTransformer {
 
 //            AbstractInsnNode nodeAfterInterception = getNodeAfterDup(monitorEnterInsnNode);
             AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode.getNext();
-            LOG.debug("Inserting call to enteredSynchronizedBlock before {}", nodeAfterInterception);
+            Logger.debug("Inserting call to enteredSynchronizedBlock before %s", nodeAfterInterception);
             methodNode.instructions.insertBefore(nodeAfterInterception, new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
@@ -138,7 +135,7 @@ class LocksTransformer implements ClassFileTransformer {
             // Duplicate lock
 //            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorExitInsnNode);
             AbstractInsnNode nodeAfterDup = monitorExitInsnNode;
-            LOG.debug("Inserting DUP before {}", nodeAfterDup);
+            Logger.debug("Inserting DUP before %s", nodeAfterDup);
             methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as last instruction of critical section
@@ -150,10 +147,10 @@ class LocksTransformer implements ClassFileTransformer {
 
     private AbstractInsnNode getNodeAfterDup(AbstractInsnNode monitorEnterInsnNode) {
         AbstractInsnNode previousNode = monitorEnterInsnNode.getPrevious();
-        LOG.debug("Checking if {} is ASTORE", previousNode);
+        Logger.debug("Checking if %s is ASTORE", previousNode);
         while (previousNode.getOpcode() == Opcodes.ASTORE) {
             previousNode = previousNode.getPrevious();
-            LOG.debug("Checking if {} is ASTORE", previousNode);
+            Logger.debug("Checking if %s is ASTORE", previousNode);
         }
         return previousNode.getNext();
     }
@@ -174,7 +171,6 @@ class LocksTransformer implements ClassFileTransformer {
         while (iterator.hasNext()) {
             AbstractInsnNode insnNode = iterator.next();
             if (insnNode.getOpcode() == instructionToExtract) {
-                LOG.trace("Detected {} in {}::{}", instructionAsString, classNode.name, methodNode.name);
                 monitorEnterInsn.add(insnNode);
             }
         }
