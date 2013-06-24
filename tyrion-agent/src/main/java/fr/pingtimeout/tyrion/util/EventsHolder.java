@@ -1,6 +1,9 @@
-package fr.pingtimeout.tyrion.model;
+package fr.pingtimeout.tyrion.util;
 
 import fj.data.List;
+import fr.pingtimeout.tyrion.model.CriticalSectionEntered;
+import fr.pingtimeout.tyrion.model.CriticalSectionEvent;
+import fr.pingtimeout.tyrion.model.CriticalSectionExit;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,15 +13,19 @@ import java.util.concurrent.atomic.AtomicReference;
 public enum EventsHolder {
     INSTANCE;
 
+
     private Map<Long, AtomicReference<List<CriticalSectionEvent>>> events = new HashMap<>();
+
 
     public void recordNewEntry(Thread accessor, Object objectUnderLock) {
         add(accessor, new CriticalSectionEntered(accessor, objectUnderLock));
     }
 
+
     public void recordNewExit(Thread accessor, Object objectUnderLock) {
         add(accessor, new CriticalSectionExit(accessor, objectUnderLock));
     }
+
 
     private void add(Thread accessor, CriticalSectionEvent newEvent) {
         AtomicReference<List<CriticalSectionEvent>> accessorEventsRef = safeGet(accessor);
@@ -31,6 +38,7 @@ public enum EventsHolder {
         } while (!accessorEventsRef.compareAndSet(currentEventsList, updatedEventsList));
     }
 
+
     private AtomicReference<List<CriticalSectionEvent>> safeGet(Thread accessor) {
         long accessorId = accessor.getId();
         if (events.get(accessorId) == null) {
@@ -42,9 +50,11 @@ public enum EventsHolder {
         return events.get(accessorId);
     }
 
+
     public Set<Long> getThreadIds() {
         return events.keySet();
     }
+
 
     public List<CriticalSectionEvent> getAndClearEventsListOf(Long threadId) {
         AtomicReference<List<CriticalSectionEvent>> accessorEventsRef = events.get(threadId);

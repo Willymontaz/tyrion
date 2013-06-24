@@ -16,18 +16,21 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion;
+package fr.pingtimeout.tyrion.agent;
 
+import fr.pingtimeout.tyrion.util.SimpleLogger;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
 
-import static fr.pingtimeout.tyrion.SynchronizedMethodVisitor.isStatic;
+import static fr.pingtimeout.tyrion.agent.SynchronizedMethodVisitor.isStatic;
 
 class SynchronizedMethodWrapper extends AdviceAdapter {
 
+
     private final String methodName;
     private final String className;
+
 
     protected SynchronizedMethodWrapper(int api, MethodVisitor mv, int access, String name, String desc, String className) {
         super(Opcodes.ASM4, mv, access, name, desc);
@@ -36,9 +39,10 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         this.className = className.replaceAll("/", ".");
     }
 
+
     @Override
     protected void onMethodEnter() {
-        Logger.debug("Entering synchronized method %s", methodName);
+        SimpleLogger.debug("Entering synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
             // Retrieve Class object that is subject to lock
@@ -58,9 +62,10 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         super.onMethodEnter();
     }
 
+
     @Override
     protected void onMethodExit(int opcode) {
-        Logger.debug("Leaving synchronized method %s", methodName);
+        SimpleLogger.debug("Leaving synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
             // Retrieve Class object that is subject to lock

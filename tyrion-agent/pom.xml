@@ -48,11 +48,12 @@
                             </descriptorRefs>
                             <archive>
                                 <manifestEntries>
-                                    <Premain-Class>fr.pingtimeout.tyrion.LockProfilingAgent</Premain-Class>
-                                    <Agent-Class>fr.pingtimeout.tyrion.LockProfilingAgent</Agent-Class>
+                                    <Premain-Class>fr.pingtimeout.tyrion.agent.LockProfilingAgent</Premain-Class>
+                                    <Agent-Class>fr.pingtimeout.tyrion.agent.LockProfilingAgent</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
-                                    <Boot-Class-Path>tyrion-agent-1.0-SNAPSHOT-jar-with-dependencies.jar</Boot-Class-Path>
+                                    <Boot-Class-Path>tyrion-agent-1.0-SNAPSHOT-jar-with-dependencies.jar
+                                    </Boot-Class-Path>
                                 </manifestEntries>
                             </archive>
                         </configuration>

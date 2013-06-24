@@ -16,8 +16,9 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion;
+package fr.pingtimeout.tyrion.agent;
 
+import fr.pingtimeout.tyrion.util.SimpleLogger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -36,16 +37,20 @@ import java.util.ListIterator;
 
 class LocksTransformer implements ClassFileTransformer {
 
+
+    private final static boolean PRINT_BYTECODE = false;
+
+
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            Logger.debug("Trying to transform %s...", className);
+            SimpleLogger.debug("Trying to transform %s...", className);
             return unsafeTransform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer.clone());
         } catch (RuntimeException ignored) {
-            Logger.warn("Unable to transform class %s, returning the class buffer unchanged. Cause : %s",
+            SimpleLogger.warn("Unable to transform class %s, returning the class buffer unchanged. Cause : %s",
                     className, ignored.getMessage());
-            Logger.debug(ignored);
+            SimpleLogger.debug(ignored);
             return classfileBuffer;
         }
     }
@@ -56,12 +61,16 @@ class LocksTransformer implements ClassFileTransformer {
         ClassReader reader = new ClassReader(classfileBuffer);
         ClassNode classNode = new ClassNode();
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        ClassVisitor traceClassVisitor = new TraceClassVisitor(writer, new PrintWriter(System.out));
-//        ClassVisitor syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, traceClassVisitor, className);
-        ClassVisitor syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, writer, className);
+
+        final ClassVisitor syncMethodsVisitor;
+        if (PRINT_BYTECODE) {
+            ClassVisitor traceClassVisitor = new TraceClassVisitor(writer, new PrintWriter(System.out));
+            syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, traceClassVisitor, className);
+        } else {
+            syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, writer, className);
+        }
 
         // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
-//        reader.accept(classNode, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         reader.accept(classNode, 0);
         interceptAllSynchronizedBlocks(classNode);
         classNode.accept(syncMethodsVisitor);
@@ -81,7 +90,7 @@ class LocksTransformer implements ClassFileTransformer {
         }
 
         if (blocksIntercepted != 0)
-            Logger.debug("Intercepted %s synchronized blocks in %s", blocksIntercepted, classNode.name);
+            SimpleLogger.debug("Intercepted %s synchronized blocks in %s", blocksIntercepted, classNode.name);
     }
 
 
@@ -89,9 +98,9 @@ class LocksTransformer implements ClassFileTransformer {
         int numberOfBlocksIntercepted = 0;
         InsnList instructions = methodNode.instructions;
         if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
-            Logger.debug("%s::%s is synchronized, nothing to do here", classNode.name, methodNode.name);
+            SimpleLogger.debug("%s::%s is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
-            Logger.debug("Intercepting all synchronized blocks of %s::%s", classNode.name, methodNode.name);
+            SimpleLogger.debug("Intercepting all synchronized blocks of %s::%s", classNode.name, methodNode.name);
             numberOfBlocksIntercepted += interceptSynchronizedBlocks(classNode, methodNode, instructions);
         }
         return numberOfBlocksIntercepted;
@@ -104,22 +113,18 @@ class LocksTransformer implements ClassFileTransformer {
         return numberOfBlocksIntercepted;
     }
 
+
     private int interceptMonitorEnter(ClassNode classNode, MethodNode methodNode) {
         Collection<AbstractInsnNode> monitorEnterInsn = extractMonitorEnterInsn(classNode, methodNode);
 
         for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
             // Duplicate lock
-//            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorEnterInsnNode);
-            AbstractInsnNode nodeAfterDup = monitorEnterInsnNode;
-            Logger.debug("Inserting DUP before %s", nodeAfterDup);
-            methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
+            SimpleLogger.debug("Inserting DUP before %s", monitorEnterInsnNode);
+            methodNode.instructions.insertBefore(monitorEnterInsnNode, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as first instruction of critical section
-//            AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode;
-
-//            AbstractInsnNode nodeAfterInterception = getNodeAfterDup(monitorEnterInsnNode);
             AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode.getNext();
-            Logger.debug("Inserting call to enteredSynchronizedBlock before %s", nodeAfterInterception);
+            SimpleLogger.debug("Inserting call to enteredSynchronizedBlock before %s", nodeAfterInterception);
             methodNode.instructions.insertBefore(nodeAfterInterception, new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "fr/pingtimeout/tyrion/LockInterceptor",
                     "enteredSynchronizedBlock", "(Ljava/lang/Object;)V"));
@@ -128,15 +133,14 @@ class LocksTransformer implements ClassFileTransformer {
         return monitorEnterInsn.size();
     }
 
+
     private void interceptMonitorExit(ClassNode classNode, MethodNode methodNode) {
         Collection<AbstractInsnNode> monitorExitInsn = extractMonitorExitInsn(classNode, methodNode);
 
         for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
             // Duplicate lock
-//            AbstractInsnNode nodeAfterDup = getNodeAfterDup(monitorExitInsnNode);
-            AbstractInsnNode nodeAfterDup = monitorExitInsnNode;
-            Logger.debug("Inserting DUP before %s", nodeAfterDup);
-            methodNode.instructions.insertBefore(nodeAfterDup, new InsnNode(Opcodes.DUP));
+            SimpleLogger.debug("Inserting DUP before %s", monitorExitInsnNode);
+            methodNode.instructions.insertBefore(monitorExitInsnNode, new InsnNode(Opcodes.DUP));
 
             // Add invokestatic as last instruction of critical section
             methodNode.instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
@@ -145,23 +149,16 @@ class LocksTransformer implements ClassFileTransformer {
         }
     }
 
-    private AbstractInsnNode getNodeAfterDup(AbstractInsnNode monitorEnterInsnNode) {
-        AbstractInsnNode previousNode = monitorEnterInsnNode.getPrevious();
-        Logger.debug("Checking if %s is ASTORE", previousNode);
-        while (previousNode.getOpcode() == Opcodes.ASTORE) {
-            previousNode = previousNode.getPrevious();
-            Logger.debug("Checking if %s is ASTORE", previousNode);
-        }
-        return previousNode.getNext();
-    }
 
     private Collection<AbstractInsnNode> extractMonitorEnterInsn(ClassNode classNode, MethodNode methodNode) {
         return extractInstructions(classNode, methodNode, Opcodes.MONITORENTER, "MonitorEnter");
     }
 
+
     private Collection<AbstractInsnNode> extractMonitorExitInsn(ClassNode classNode, MethodNode methodNode) {
         return extractInstructions(classNode, methodNode, Opcodes.MONITOREXIT, "MonitorExit");
     }
+
 
     @SuppressWarnings("unchecked")
     private Collection<AbstractInsnNode> extractInstructions(ClassNode classNode, MethodNode methodNode,

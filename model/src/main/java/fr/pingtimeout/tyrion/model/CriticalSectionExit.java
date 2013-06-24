@@ -5,6 +5,7 @@ public class CriticalSectionExit extends CriticalSectionEvent {
         super(accessor, objectUnderLock);
     }
 
+
     @Override
     String getType() {
         return "exit";

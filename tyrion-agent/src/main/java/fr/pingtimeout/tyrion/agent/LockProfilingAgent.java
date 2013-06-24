@@ -16,9 +16,11 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion;
+package fr.pingtimeout.tyrion.agent;
 
-import java.io.FileNotFoundException;
+import fr.pingtimeout.tyrion.util.EventsWriter;
+import fr.pingtimeout.tyrion.util.SimpleLogger;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -43,37 +45,36 @@ public class LockProfilingAgent {
     public static void premain(String args, Instrumentation inst) throws Exception {
         new LockInterceptor();
         String arguments = args == null ? "" : args;
-        Logger.info("Tyrion agent starting with arguments '%s'", arguments);
+        SimpleLogger.info("Tyrion agent starting with arguments '%s'", arguments);
 
         if (arguments.startsWith("outputFile=")) {
             final String outputFile = arguments.substring("outputFile=".length());
-
-//            if (LocksStatisticsCollector.createInstanceAndRegisterAsMXBean()) {
-//                Logger.info("Statistics succesfully registered as JMX bean");
-//            }
 
             clearOutputFile(outputFile);
             scheduleLocksWrite(outputFile);
 
             addLocksTransformer(inst);
         } else {
-            Logger.warn("No output file was provided, agent is disabled");
+            SimpleLogger.warn("No output file was provided, agent is disabled");
         }
 
     }
+
 
     private static void clearOutputFile(String outputFile) {
-        try(FileOutputStream erasor = new FileOutputStream(outputFile)) {
+        try (FileOutputStream erasor = new FileOutputStream(outputFile)) {
             erasor.write("".getBytes(Charset.forName("UTF-8")));
         } catch (IOException e) {
-            Logger.warn("Output file could not be cleared. Cause : %s", e.getMessage());
-            Logger.debug(e);
+            SimpleLogger.warn("Output file could not be cleared. Cause : %s", e.getMessage());
+            SimpleLogger.debug(e);
         }
     }
+
 
     private static void addLocksTransformer(Instrumentation inst) {
         inst.addTransformer(new LocksTransformer());
     }
+
 
     private static void scheduleLocksWrite(String outputFile) {
         final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {

@@ -16,9 +16,9 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion;
+package fr.pingtimeout.tyrion.agent;
 
-import fr.pingtimeout.tyrion.model.EventsHolder;
+import fr.pingtimeout.tyrion.util.EventsHolder;
 
 import java.util.Arrays;
 
@@ -39,6 +39,7 @@ public class LockInterceptor {
         recordSynchronizedExitOn(lock);
     }
 
+
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void enteredSynchronizedBlock(Object lock) {
@@ -53,6 +54,7 @@ public class LockInterceptor {
         StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedExitOn(lock);
     }
+
 
     private static StackTraceElement[] createStackTrace() {
         Throwable exception = new Throwable("");

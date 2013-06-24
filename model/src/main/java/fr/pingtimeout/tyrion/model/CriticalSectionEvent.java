@@ -2,11 +2,13 @@ package fr.pingtimeout.tyrion.model;
 
 public abstract class CriticalSectionEvent {
 
+
     private final long timestamp;
 
     private final Accessor accessor;
 
     private final Target target;
+
 
     public CriticalSectionEvent(Thread accessingThread, Object objectUnderLock) {
         this.timestamp = System.currentTimeMillis();
@@ -29,6 +31,7 @@ public abstract class CriticalSectionEvent {
                 + "}"
                 ;
     }
+
 
     abstract String getType();
 

@@ -16,15 +16,18 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion;
+package fr.pingtimeout.tyrion.agent;
 
+import fr.pingtimeout.tyrion.util.SimpleLogger;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 class SynchronizedMethodVisitor extends ClassVisitor {
 
+
     private final String className;
+
 
     public SynchronizedMethodVisitor(int api, ClassVisitor cv, String className) {
         super(api, cv);
@@ -37,7 +40,7 @@ class SynchronizedMethodVisitor extends ClassVisitor {
         final MethodVisitor nextVisitor = super.visitMethod(access, name, desc, signature, exceptions);
 
         if (isSynchronized(access)) {
-            Logger.debug("Found synchronized method : %s %s::%s %s", accessToString(access), className, name, desc);
+            SimpleLogger.debug("Found synchronized method : %s %s::%s %s", accessToString(access), className, name, desc);
             return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc, className);
         }
 
@@ -48,6 +51,7 @@ class SynchronizedMethodVisitor extends ClassVisitor {
     public static boolean isSynchronized(int access) {
         return (access & Opcodes.ACC_SYNCHRONIZED) != 0;
     }
+
 
     public static boolean isStatic(int access) {
         return (access & Opcodes.ACC_STATIC) != 0;
