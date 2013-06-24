@@ -18,8 +18,6 @@
 
 package fr.pingtimeout.tyrion;
 
-import fr.pingtimeout.tyrion.data.LockFactory;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.io.BufferedWriter;
@@ -32,31 +30,15 @@ import java.util.concurrent.TimeUnit;
 public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
     INSTANCE;
 
-    public static void createInstanceAndRegisterAsMXBeanLater() {
-        long fiveSecondsInMillis = TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
-        Timer timer = new Timer();
-        TimerTask registerAsMXBean = new TimerTask() {
-            @Override
-            public void run() {
-                LocksStatisticsCollector.INSTANCE.registerAsMXBean();
-            }
-        };
 
-        timer.schedule(registerAsMXBean, fiveSecondsInMillis);
-    }
-
-    public static boolean createInstanceAndRegisterAsMXBean(String outputFile) {
+    public static boolean createInstanceAndRegisterAsMXBean() {
         try {
             INSTANCE.registerAsMXBean();
-            INSTANCE.outputFile = outputFile;
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-
-
-    private String outputFile;
 
 
     private void registerAsMXBean() {
@@ -69,23 +51,5 @@ public enum LocksStatisticsCollector implements LocksStatisticsMXBean {
             Logger.warn("Unable to register LocksStatisticsCollector as a MXBean, data will not be available through JMX. Cause : %s", ignored.getMessage());
             Logger.debug(ignored);
         }
-    }
-
-
-    @Override
-    public String dumpLocks() {
-        String result = "";
-        if (outputFile.length() != 0) {
-            try (FileWriter fileWriter = new FileWriter(outputFile);
-                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
-                bufferedWriter.write(LockFactory.dumpAllLocksToJSON());
-                result = "Successfully dumped locks statistics";
-            } catch (Exception ignored) {
-                result = "Could not dump locks";
-                Logger.warn(result);
-                Logger.debug("Stacktrace : ", ignored);
-            }
-        }
-        return result;
     }
 }

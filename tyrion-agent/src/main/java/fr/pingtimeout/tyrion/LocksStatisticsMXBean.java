@@ -19,5 +19,4 @@
 package fr.pingtimeout.tyrion;
 
 public interface LocksStatisticsMXBean {
-    String dumpLocks();
 }

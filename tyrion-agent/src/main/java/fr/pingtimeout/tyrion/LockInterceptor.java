@@ -18,8 +18,7 @@
 
 package fr.pingtimeout.tyrion;
 
-import fr.pingtimeout.tyrion.data.LockAccesses;
-import fr.pingtimeout.tyrion.data.LockFactory;
+import fr.pingtimeout.tyrion.model.EventsHolder;
 
 import java.util.Arrays;
 
@@ -30,7 +29,6 @@ public class LockInterceptor {
     public static void enteredSynchronizedMethod(Object lock) {
         StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedAccessOn(lock);
-        printDebugMessage("just entered a synchronized method", lock, filteredStackTrace);
     }
 
 
@@ -38,25 +36,23 @@ public class LockInterceptor {
     @SuppressWarnings("unused")
     public static void leavingSynchronizedMethod(Object lock) {
         StackTraceElement[] filteredStackTrace = createStackTrace();
-        printDebugMessage("is leaving a synchronized method", lock, filteredStackTrace);
+        recordSynchronizedExitOn(lock);
     }
-
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void enteredSynchronizedBlock(Object lock) {
         StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedAccessOn(lock);
-        printDebugMessage("just entered a synchronized block", lock, filteredStackTrace);
     }
+
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
     public static void leavingSynchronizedBlock(Object lock) {
         StackTraceElement[] filteredStackTrace = createStackTrace();
-        printDebugMessage("is leaving a synchronized block", lock, filteredStackTrace);
+        recordSynchronizedExitOn(lock);
     }
-
 
     private static StackTraceElement[] createStackTrace() {
         Throwable exception = new Throwable("");
@@ -66,13 +62,11 @@ public class LockInterceptor {
 
 
     private static void recordSynchronizedAccessOn(Object target) {
-        LockAccesses lockAccesses = LockFactory.getInstanceFrom(target);
-        lockAccesses.addAccessFrom(Thread.currentThread());
+        EventsHolder.INSTANCE.recordNewEntry(Thread.currentThread(), target);
     }
 
 
-    private static void printDebugMessage(String intercepted, Object arg, StackTraceElement[] stacktrace) {
-//        LOG.debug("Someone {} on {} (type : {})", intercepted, arg, arg.getClass());
-//        LOG.trace("Stacktrace : {}", Arrays.toString(stacktrace));
+    private static void recordSynchronizedExitOn(Object target) {
+        EventsHolder.INSTANCE.recordNewExit(Thread.currentThread(), target);
     }
 }

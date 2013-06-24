@@ -30,4 +30,12 @@
     <artifactId>model</artifactId>
 
     <name>Model</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.functionaljava</groupId>
+            <artifactId>functionaljava</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+    </dependencies>
 </project>
