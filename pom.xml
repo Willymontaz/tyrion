@@ -65,6 +65,11 @@
                 <version>RELEASE</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jfree</groupId>
+                <artifactId>jfreechart</artifactId>
+                <version>RELEASE</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
