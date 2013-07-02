@@ -23,10 +23,15 @@ import fr.pingtimeout.tyrion.util.EventsHolder;
 import java.util.Arrays;
 
 public class LockInterceptor {
+    public static final String CLASS_FQN = LockInterceptor.class.getName().replace('.', '/');
+
+    public static final String ENTER_METHOD_NAME = "enteredCriticalSection";
+    public static final String EXIT_METHOD_NAME = "leavingCriticalSection";
+    public static final String ENTER_EXIT_METHOD_SIGNATURE = "(Ljava/lang/Object;)V";
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
-    public static void enteredSynchronizedMethod(Object lock) {
+    public static void enteredCriticalSection(Object lock) {
         StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedAccessOn(lock);
     }
@@ -34,23 +39,7 @@ public class LockInterceptor {
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
-    public static void leavingSynchronizedMethod(Object lock) {
-        StackTraceElement[] filteredStackTrace = createStackTrace();
-        recordSynchronizedExitOn(lock);
-    }
-
-
-    // This method is called dynamically, warnings can be suppressed
-    @SuppressWarnings("unused")
-    public static void enteredSynchronizedBlock(Object lock) {
-        StackTraceElement[] filteredStackTrace = createStackTrace();
-        recordSynchronizedAccessOn(lock);
-    }
-
-
-    // This method is called dynamically, warnings can be suppressed
-    @SuppressWarnings("unused")
-    public static void leavingSynchronizedBlock(Object lock) {
+    public static void leavingCriticalSection(Object lock) {
         StackTraceElement[] filteredStackTrace = createStackTrace();
         recordSynchronizedExitOn(lock);
     }
@@ -70,5 +59,9 @@ public class LockInterceptor {
 
     private static void recordSynchronizedExitOn(Object target) {
         EventsHolder.INSTANCE.recordNewExit(Thread.currentThread(), target);
+    }
+
+    static boolean isActive() {
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 package fr.pingtimeout.tyrion.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fj.data.List;
 import fr.pingtimeout.tyrion.model.CriticalSectionEvent;
 
@@ -10,15 +11,16 @@ import java.util.Set;
 
 public class EventsWriter implements Runnable {
 
-
     public static final boolean DO_APPEND = true;
 
+    private final ObjectMapper jsonMapper;
 
     private final String outputFile;
 
 
     public EventsWriter(String outputFile) {
         this.outputFile = outputFile;
+        jsonMapper = new ObjectMapper();
     }
 
 
@@ -33,7 +35,7 @@ public class EventsWriter implements Runnable {
 
         } catch (Exception ignored) {
             SimpleLogger.warn("Could not dump locks");
-            SimpleLogger.debug("Stacktrace : ", ignored);
+            SimpleLogger.debug(ignored);
         }
     }
 
@@ -49,7 +51,7 @@ public class EventsWriter implements Runnable {
     private void writeEvents(BufferedWriter writer, Long threadId) throws IOException {
         List<CriticalSectionEvent> accessorEvents = EventsHolder.INSTANCE.getAndClearEventsListOf(threadId);
         for (CriticalSectionEvent accessorEvent : accessorEvents) {
-            writer.write(accessorEvent.toJson());
+            writer.write(jsonMapper.writeValueAsString(accessorEvent));
             writer.write("\n");
         }
     }

@@ -36,5 +36,9 @@
             <groupId>org.functionaljava</groupId>
             <artifactId>functionaljava</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
     </dependencies>
 </project>

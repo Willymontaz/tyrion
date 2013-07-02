@@ -1,7 +1,16 @@
 package fr.pingtimeout.tyrion.model;
 
-public abstract class CriticalSectionEvent {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CriticalSectionEntered.class, name = "enter"),
+        @JsonSubTypes.Type(value = CriticalSectionExit.class, name = "exit")
+})
+public abstract class CriticalSectionEvent {
 
     private final long timestamp;
 
@@ -16,57 +25,40 @@ public abstract class CriticalSectionEvent {
         this.target = new Target(objectUnderLock);
     }
 
-
-    public String toJson() {
-        return ""
-                + "{"
-                + "\"type\": \"" + getType() + "\""
-                + ", \"timestamp\": \"" + timestamp + "\""
-                + ", \"accessor\": "
-                /**/ + "{"
-                /**/ + " \"id\" : \"" + accessor + "\""
-                /**/ + ", \"name\" : \"" + accessor.name + "\""
-                /**/ + " }"
-                + ", \"target\": \"" + target + "\""
-                + "}"
-                ;
+    @JsonCreator
+    protected CriticalSectionEvent(
+            @JsonProperty("timestamp") long timestamp,
+            @JsonProperty("accessor") Accessor accessor,
+            @JsonProperty("target") Target target) {
+        this.timestamp = timestamp;
+        this.accessor = accessor;
+        this.target = target;
     }
 
 
     abstract String getType();
 
 
-    class Accessor {
-        private final long id;
-
-        private final String name;
-
-        Accessor(Thread accessingThread) {
-            this.id = accessingThread.getId();
-            this.name = accessingThread.getName();
-        }
-
-        @Override
-        public String toString() {
-            return Thread.class.getName() + "@" + id;
-        }
+    public long getTimestamp() {
+        return timestamp;
     }
 
+    public Accessor getAccessor() {
+        return accessor;
+    }
 
-    class Target {
+    public Target getTarget() {
+        return target;
+    }
 
-        private final Class<?> clazz;
-
-        private final long hashcode;
-
-        Target(Object target) {
-            this.clazz = target.getClass();
-            this.hashcode = System.identityHashCode(target);
-        }
-
-        @Override
-        public String toString() {
-            return clazz.toString() + "@" + hashcode;
-        }
+    @Override
+    public String toString() {
+        return "CriticalSectionEvent{" +
+                "timestamp=" + timestamp +
+                ", accessor=" + accessor +
+                ", target=" + target +
+                '}';
     }
 }
+
+
