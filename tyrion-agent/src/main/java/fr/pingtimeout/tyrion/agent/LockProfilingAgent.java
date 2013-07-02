@@ -43,13 +43,8 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        new LockInterceptor();
         String arguments = args == null ? "" : args;
         SimpleLogger.info("Tyrion agent starting with arguments '%s'", arguments);
-
-        if(LockInterceptor.isActive()) {
-            SimpleLogger.trace("Lock interceptor is ready");
-        }
 
         if (arguments.startsWith("outputFile=")) {
             final String outputFile = arguments.substring("outputFile=".length());

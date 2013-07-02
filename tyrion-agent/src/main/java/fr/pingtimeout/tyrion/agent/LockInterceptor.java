@@ -19,15 +19,17 @@
 package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.EventsHolder;
+import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
 
 import java.util.Arrays;
 
 public class LockInterceptor {
     public static final String CLASS_FQN = LockInterceptor.class.getName().replace('.', '/');
-
     public static final String ENTER_METHOD_NAME = "enteredCriticalSection";
     public static final String EXIT_METHOD_NAME = "leavingCriticalSection";
     public static final String ENTER_EXIT_METHOD_SIGNATURE = "(Ljava/lang/Object;)V";
+
+    static EventsHolder eventsHolder = EventsHolderSingleton.INSTANCE;
 
     // This method is called dynamically, warnings can be suppressed
     @SuppressWarnings("unused")
@@ -53,15 +55,11 @@ public class LockInterceptor {
 
 
     private static void recordSynchronizedAccessOn(Object target) {
-        EventsHolder.INSTANCE.recordNewEntry(Thread.currentThread(), target);
+        eventsHolder.recordNewEntry(Thread.currentThread(), target);
     }
 
 
     private static void recordSynchronizedExitOn(Object target) {
-        EventsHolder.INSTANCE.recordNewExit(Thread.currentThread(), target);
-    }
-
-    static boolean isActive() {
-        return true;
+        eventsHolder.recordNewExit(Thread.currentThread(), target);
     }
 }

@@ -41,7 +41,7 @@ public class EventsWriter implements Runnable {
 
 
     private void writeEvents(BufferedWriter writer) throws IOException {
-        Set<Long> threadIds = EventsHolder.INSTANCE.getThreadIds();
+        Set<Long> threadIds = EventsHolderSingleton.INSTANCE.getThreadIds();
         for (Long threadId : threadIds) {
             writeEvents(writer, threadId);
         }
@@ -49,7 +49,7 @@ public class EventsWriter implements Runnable {
 
 
     private void writeEvents(BufferedWriter writer, Long threadId) throws IOException {
-        List<CriticalSectionEvent> accessorEvents = EventsHolder.INSTANCE.getAndClearEventsListOf(threadId);
+        List<CriticalSectionEvent> accessorEvents = EventsHolderSingleton.INSTANCE.getAndClearEventsListOf(threadId);
         for (CriticalSectionEvent accessorEvent : accessorEvents) {
             writer.write(jsonMapper.writeValueAsString(accessorEvent));
             writer.write("\n");
