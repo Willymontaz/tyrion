@@ -22,6 +22,7 @@ import fr.pingtimeout.tyrion.util.EventsHolder;
 import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LockInterceptor {
     public static final String CLASS_FQN = LockInterceptor.class.getName().replace('.', '/');
@@ -31,19 +32,23 @@ public class LockInterceptor {
 
     static EventsHolder eventsHolder = EventsHolderSingleton.INSTANCE;
 
-    // This method is called dynamically, warnings can be suppressed
-    @SuppressWarnings("unused")
+    static AtomicBoolean enabled = new AtomicBoolean(false);
+
+    // Note : this method is called dynamically
     public static void enteredCriticalSection(Object lock) {
-        StackTraceElement[] filteredStackTrace = createStackTrace();
-        recordSynchronizedAccessOn(lock);
+        if (enabled.get()) {
+            StackTraceElement[] filteredStackTrace = createStackTrace();
+            recordSynchronizedAccessOn(lock);
+        }
     }
 
 
-    // This method is called dynamically, warnings can be suppressed
-    @SuppressWarnings("unused")
+    // Note : this method is called dynamically
     public static void leavingCriticalSection(Object lock) {
-        StackTraceElement[] filteredStackTrace = createStackTrace();
-        recordSynchronizedExitOn(lock);
+        if (enabled.get()) {
+            StackTraceElement[] filteredStackTrace = createStackTrace();
+            recordSynchronizedExitOn(lock);
+        }
     }
 
 
