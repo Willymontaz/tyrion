@@ -11,17 +11,12 @@ public class CriticalSectionEntered extends CriticalSectionEvent {
     }
 
 
+    // Constructor and getters required by Jackson unmashalling process
     @JsonCreator
-    protected CriticalSectionEntered (
+    protected CriticalSectionEntered(
             @JsonProperty("timestamp") long timestamp,
             @JsonProperty("accessor") Accessor accessor,
             @JsonProperty("target") Target target) {
         super(timestamp, accessor, target);
-    }
-
-
-    @Override
-    String getType() {
-        return "enter";
     }
 }

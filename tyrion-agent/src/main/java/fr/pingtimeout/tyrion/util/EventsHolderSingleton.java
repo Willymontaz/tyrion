@@ -8,13 +8,14 @@ import fr.pingtimeout.tyrion.model.CriticalSectionExit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public enum EventsHolderSingleton implements EventsHolder {
     INSTANCE;
 
 
-    private Map<Long, AtomicReference<List<CriticalSectionEvent>>> events = new HashMap<>();
+    private Map<Long, AtomicReference<List<CriticalSectionEvent>>> events = new ConcurrentHashMap<>();
 
 
     @Override

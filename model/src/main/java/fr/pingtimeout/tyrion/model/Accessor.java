@@ -4,18 +4,20 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Accessor {
+
     private long id;
 
     private String name;
 
-    Accessor(Thread accessingThread) {
+
+    public Accessor(Thread accessingThread) {
         this.id = accessingThread.getId();
         this.name = accessingThread.getName();
     }
 
 
     @JsonCreator
-    public Accessor(
+    protected Accessor(
             @JsonProperty("id") long id,
             @JsonProperty("name") String name) {
         this.id = id;
@@ -34,5 +36,22 @@ public class Accessor {
     @Override
     public String toString() {
         return Thread.class.getName() + "@" + id + " : " + name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Accessor)) return false;
+
+        Accessor accessor = (Accessor) o;
+
+        if (id != accessor.id) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
     }
 }

@@ -24,30 +24,36 @@ import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LockInterceptor {
+public enum LockInterceptor {
+    INSTANCE(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
+
     public static final String CLASS_FQN = LockInterceptor.class.getName().replace('.', '/');
     public static final String ENTER_METHOD_NAME = "enteredCriticalSection";
     public static final String EXIT_METHOD_NAME = "leavingCriticalSection";
     public static final String ENTER_EXIT_METHOD_SIGNATURE = "(Ljava/lang/Object;)V";
 
-    static EventsHolder eventsHolder = EventsHolderSingleton.INSTANCE;
+    EventsHolder eventsHolder;
+    AtomicBoolean enabled;
 
-    static AtomicBoolean enabled = new AtomicBoolean(false);
+    LockInterceptor(EventsHolder eventsHolder, AtomicBoolean enabled) {
+        this.eventsHolder = eventsHolder;
+        this.enabled = enabled;
+    }
 
     // Note : this method is called dynamically
-    public static void enteredCriticalSection(Object lock) {
+    public void enteredCriticalSection(Object lock) {
         if (enabled.get()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
-            recordSynchronizedAccessOn(lock);
+            eventsHolder.recordNewEntry(Thread.currentThread(), lock);
         }
     }
 
 
     // Note : this method is called dynamically
-    public static void leavingCriticalSection(Object lock) {
+    public  void leavingCriticalSection(Object lock) {
         if (enabled.get()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
-            recordSynchronizedExitOn(lock);
+            eventsHolder.recordNewExit(Thread.currentThread(), lock);
         }
     }
 
@@ -56,15 +62,5 @@ public class LockInterceptor {
         Throwable exception = new Throwable("");
         StackTraceElement[] stackTrace = exception.getStackTrace();
         return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
-    }
-
-
-    private static void recordSynchronizedAccessOn(Object target) {
-        eventsHolder.recordNewEntry(Thread.currentThread(), target);
-    }
-
-
-    private static void recordSynchronizedExitOn(Object target) {
-        eventsHolder.recordNewExit(Thread.currentThread(), target);
     }
 }

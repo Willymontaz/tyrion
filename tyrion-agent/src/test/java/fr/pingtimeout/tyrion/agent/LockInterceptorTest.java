@@ -12,42 +12,12 @@ public class LockInterceptorTest {
     public void test_entry_in_critical_section_when_enabled() {
         // Given
         EventsHolder eventsHolder = mock(EventsHolder.class);
-        LockInterceptor.eventsHolder = eventsHolder;
-        LockInterceptor.enabled.getAndSet(true);
+        LockInterceptor.INSTANCE.eventsHolder = eventsHolder;
+        LockInterceptor.INSTANCE.enabled.getAndSet(true);
         Object lock = new Object();
 
         // When
-        LockInterceptor.enteredCriticalSection(lock);
-
-        // Then
-        verify(eventsHolder, times(1)).recordNewEntry(Thread.currentThread(), lock);
-    }
-
-    @Test
-    public void test_exit_from_critical_section_when_disabled() {
-        // Given
-        EventsHolder eventsHolder = mock(EventsHolder.class);
-        LockInterceptor.eventsHolder = eventsHolder;
-        LockInterceptor.enabled.getAndSet(false);
-        Object lock = new Object();
-
-        // When
-        LockInterceptor.leavingCriticalSection(lock);
-
-        // Then
-        verify(eventsHolder, never()).recordNewExit(Thread.currentThread(), lock);
-    }
-
-    @Test
-    public void test_entry_in_critical_section_when_disabled() {
-        // Given
-        EventsHolder eventsHolder = mock(EventsHolder.class);
-        LockInterceptor.eventsHolder = eventsHolder;
-        LockInterceptor.enabled.getAndSet(true);
-        Object lock = new Object();
-
-        // When
-        LockInterceptor.enteredCriticalSection(lock);
+        LockInterceptor.INSTANCE.enteredCriticalSection(lock);
 
         // Then
         verify(eventsHolder, times(1)).recordNewEntry(Thread.currentThread(), lock);
@@ -57,12 +27,42 @@ public class LockInterceptorTest {
     public void test_exit_from_critical_section_when_enabled() {
         // Given
         EventsHolder eventsHolder = mock(EventsHolder.class);
-        LockInterceptor.eventsHolder = eventsHolder;
-        LockInterceptor.enabled.getAndSet(false);
+        LockInterceptor.INSTANCE.eventsHolder = eventsHolder;
+        LockInterceptor.INSTANCE.enabled.getAndSet(true);
         Object lock = new Object();
 
         // When
-        LockInterceptor.leavingCriticalSection(lock);
+        LockInterceptor.INSTANCE.leavingCriticalSection(lock);
+
+        // Then
+        verify(eventsHolder, times(1)).recordNewExit(Thread.currentThread(), lock);
+    }
+
+    @Test
+    public void test_entry_in_critical_section_when_disabled() {
+        // Given
+        EventsHolder eventsHolder = mock(EventsHolder.class);
+        LockInterceptor.INSTANCE.eventsHolder = eventsHolder;
+        LockInterceptor.INSTANCE.enabled.getAndSet(false);
+        Object lock = new Object();
+
+        // When
+        LockInterceptor.INSTANCE.enteredCriticalSection(lock);
+
+        // Then
+        verify(eventsHolder, never()).recordNewEntry(Thread.currentThread(), lock);
+    }
+
+    @Test
+    public void test_exit_from_critical_section_when_disabled() {
+        // Given
+        EventsHolder eventsHolder = mock(EventsHolder.class);
+        LockInterceptor.INSTANCE.eventsHolder = eventsHolder;
+        LockInterceptor.INSTANCE.enabled.getAndSet(false);
+        Object lock = new Object();
+
+        // When
+        LockInterceptor.INSTANCE.leavingCriticalSection(lock);
 
         // Then
         verify(eventsHolder, never()).recordNewExit(Thread.currentThread(), lock);

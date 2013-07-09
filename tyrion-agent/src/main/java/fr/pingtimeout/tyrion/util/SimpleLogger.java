@@ -3,43 +3,109 @@ package fr.pingtimeout.tyrion.util;
 import java.io.PrintStream;
 
 public class SimpleLogger {
-    public static final boolean WARN = true;
-    public static final boolean INFO = true;
-    public static final boolean DEBUG = false;
-    private static final boolean TRACE = false;
+
+    static SimpleLogger LOG = new SimpleLogger(Level.WARN);
 
 
-    public static void warn(String message, Object... args) {
-        if (WARN)
-            printf("WARN", message, args);
+    private final Level level;
+
+    private final PrintStream out;
+
+
+    public SimpleLogger(Level level) {
+        this.level = level;
+        this.out = System.out;
+    }
+
+    public SimpleLogger(Level level, PrintStream printStream) {
+        this.level = level;
+        this.out = printStream;
     }
 
 
-    public static void info(String message, Object... args) {
-        if (INFO)
-            printf("INFO", message, args);
+    void warnMessage(String message, Object... args) {
+        if (level.isWarnEnabled())
+            printf("WARN ", message, args);
     }
 
 
-    public static void debug(String message, Object... args) {
-        if (DEBUG)
+    void infoMessage(String message, Object... args) {
+        if (level.isInfoEnabled())
+            printf("INFO ", message, args);
+    }
+
+
+    void debugMessage(String message, Object... args) {
+        if (level.isDebugEnabled())
             printf("DEBUG", message, args);
     }
 
 
-    public static void debug(Exception e) {
-        if (DEBUG)
-            e.printStackTrace();
+    void debugMessage(Exception e) {
+        if (level.isDebugEnabled())
+            e.printStackTrace(out);
     }
 
 
-    public static void trace(String message, Object... args) {
-        if (TRACE)
+    void traceMessage(String message, Object... args) {
+        if (level.isTraceEnabled())
             printf("TRACE", message, args);
     }
 
 
-    private static PrintStream printf(String level, String message, Object[] args) {
-        return System.out.printf(level + " - " + message + '\n', args);
+    private PrintStream printf(String level, String message, Object[] args) {
+        return out.printf(level + " - " + message + '\n', args);
+    }
+
+
+    public static void warn(String message, Object... args) {
+        LOG.warnMessage(message, args);
+    }
+
+
+    public static void info(String message, Object... args) {
+        LOG.infoMessage(message, args);
+    }
+
+
+    public static void debug(String message, Object... args) {
+        LOG.debugMessage(message, args);
+    }
+
+
+    public static void debug(Exception e) {
+        LOG.debugMessage(e);
+    }
+
+
+    public static void trace(String message, Object... args) {
+        LOG.traceMessage(message, args);
+    }
+
+
+    static enum Level {
+        OFF(0), WARN(1), INFO(2), DEBUG(3), TRACE(4);
+
+        private final int priority;
+
+        Level(int priority) {
+            this.priority = priority;
+        }
+
+        public boolean isWarnEnabled() {
+            return priority >= WARN.priority;
+        }
+
+        public boolean isInfoEnabled() {
+            return priority >= INFO.priority;
+        }
+
+        public boolean isDebugEnabled() {
+            return priority >= DEBUG.priority;
+        }
+
+        public boolean isTraceEnabled() {
+            return priority >= TRACE.priority;
+        }
     }
 }

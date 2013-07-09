@@ -25,6 +25,7 @@ public abstract class CriticalSectionEvent {
         this.target = new Target(objectUnderLock);
     }
 
+    // Constructor and getters required by Jackson unmashalling process
     @JsonCreator
     protected CriticalSectionEvent(
             @JsonProperty("timestamp") long timestamp,
@@ -34,9 +35,6 @@ public abstract class CriticalSectionEvent {
         this.accessor = accessor;
         this.target = target;
     }
-
-
-    abstract String getType();
 
 
     public long getTimestamp() {
