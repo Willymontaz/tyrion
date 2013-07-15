@@ -24,16 +24,16 @@ import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public enum LockInterceptor {
-    INSTANCE(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
+public class LockInterceptor {
+    private static LockInterceptor INSTANCE = new LockInterceptor(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
 
     public static final String CLASS_FQN = LockInterceptor.class.getName().replace('.', '/');
     public static final String ENTER_METHOD_NAME = "enteredCriticalSection";
     public static final String EXIT_METHOD_NAME = "leavingCriticalSection";
     public static final String ENTER_EXIT_METHOD_SIGNATURE = "(Ljava/lang/Object;)V";
 
-    EventsHolder eventsHolder;
-    AtomicBoolean enabled;
+    private final EventsHolder eventsHolder;
+    private final AtomicBoolean enabled;
 
     LockInterceptor(EventsHolder eventsHolder, AtomicBoolean enabled) {
         this.eventsHolder = eventsHolder;
