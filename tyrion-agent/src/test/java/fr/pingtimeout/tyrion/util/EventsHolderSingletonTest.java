@@ -45,7 +45,7 @@ public class EventsHolderSingletonTest {
 
         // Then
         assertThat(eventsHolder.getAndClearEventsListOf(accessor.getId()))
-                .usingElementComparator(new CriticalSectionEventsWithoutTimeComparator())
+                .usingElementComparator(new CriticalSectionEventsWithoutTime())
                 .containsOnly(criticalSectionEvent);
     }
 
@@ -62,7 +62,7 @@ public class EventsHolderSingletonTest {
 
         // Then
         assertThat(eventsHolder.getAndClearEventsListOf(accessor.getId()))
-                .usingElementComparator(new CriticalSectionEventsWithoutTimeComparator())
+                .usingElementComparator(new CriticalSectionEventsWithoutTime())
                 .containsOnly(criticalSectionEvent);
     }
 
@@ -88,7 +88,7 @@ public class EventsHolderSingletonTest {
         // Then
         final List<Long> expectedThreadIds = extractProperty("id", Long.class).from(threads);
         final Set<Long> threadIds = eventsHolder.getThreadIds();
-        final CriticalSectionEventsWithoutTimeComparator eventsWithoutTime = new CriticalSectionEventsWithoutTimeComparator();
+        final CriticalSectionEventsWithoutTime eventsWithoutTime = new CriticalSectionEventsWithoutTime();
 
         assertThat(threadIds).hasSize(numberOfThreads);
         assertThat(threadIds).containsAll(expectedThreadIds);

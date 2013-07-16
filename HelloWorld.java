@@ -43,6 +43,9 @@ public class HelloWorld {
     public static void main(String... args) throws Exception {
         HelloWorld hello = new HelloWorld();
 
+        System.out.println("Press enter to start");
+        System.in.read();
+
         hello.synchronizedMethod();
         hello.synchronizedBlock();
         staticSynchronizedMethod();

@@ -27,11 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LockInterceptor {
     private static LockInterceptor INSTANCE = new LockInterceptor(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
 
-    public static final String CLASS_FQN = LockInterceptor.class.getName().replace('.', '/');
-    public static final String ENTER_METHOD_NAME = "enteredCriticalSection";
-    public static final String EXIT_METHOD_NAME = "leavingCriticalSection";
-    public static final String ENTER_EXIT_METHOD_SIGNATURE = "(Ljava/lang/Object;)V";
-
     private final EventsHolder eventsHolder;
     private final AtomicBoolean enabled;
 
@@ -62,5 +57,9 @@ public class LockInterceptor {
         Throwable exception = new Throwable("");
         StackTraceElement[] stackTrace = exception.getStackTrace();
         return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
+    }
+
+    public static LockInterceptor getInstance() {
+        return INSTANCE;
     }
 }

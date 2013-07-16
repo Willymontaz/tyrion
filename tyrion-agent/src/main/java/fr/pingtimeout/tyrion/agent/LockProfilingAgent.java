@@ -84,6 +84,6 @@ public class LockProfilingAgent {
                 return t;
             }
         });
-        executorService.scheduleAtFixedRate(new EventsWriter(outputFile), 1, 10, TimeUnit.SECONDS);
+        executorService.scheduleAtFixedRate(new EventsWriter(outputFile), 1, 1, TimeUnit.SECONDS);
     }
 }

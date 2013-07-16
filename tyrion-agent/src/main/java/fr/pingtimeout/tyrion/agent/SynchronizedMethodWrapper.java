@@ -56,8 +56,8 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         }
 
         mv.visitMethodInsn(INVOKESTATIC,
-                LockInterceptor.CLASS_FQN,
-                LockInterceptor.ENTER_METHOD_NAME, LockInterceptor.ENTER_EXIT_METHOD_SIGNATURE);
+                LockInterceptorStaticAccessor.CLASS_FQN,
+                LockInterceptorStaticAccessor.ENTER_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
 
         super.onMethodEnter();
     }
@@ -79,8 +79,8 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         }
 
         mv.visitMethodInsn(INVOKESTATIC,
-                LockInterceptor.CLASS_FQN,
-                LockInterceptor.EXIT_METHOD_NAME, LockInterceptor.ENTER_EXIT_METHOD_SIGNATURE);
+                LockInterceptorStaticAccessor.CLASS_FQN,
+                LockInterceptorStaticAccessor.EXIT_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
 
         super.onMethodExit(opcode);
     }

@@ -24,7 +24,7 @@ import fr.pingtimeout.tyrion.model.Target;
 
 import java.util.Comparator;
 
-public class CriticalSectionEventsWithoutTimeComparator implements Comparator<CriticalSectionEvent> {
+public class CriticalSectionEventsWithoutTime implements Comparator<CriticalSectionEvent> {
     @Override
     public int compare(CriticalSectionEvent e1, CriticalSectionEvent e2) {
         Accessor e1Accessor = e1.getAccessor();

@@ -126,8 +126,8 @@ class LocksTransformer implements ClassFileTransformer {
             AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode.getNext();
             SimpleLogger.debug("Inserting call to enteredSynchronizedBlock before %s", nodeAfterInterception);
             methodNode.instructions.insertBefore(nodeAfterInterception, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    LockInterceptor.CLASS_FQN,
-                    LockInterceptor.ENTER_METHOD_NAME, LockInterceptor.ENTER_EXIT_METHOD_SIGNATURE));
+                    LockInterceptorStaticAccessor.CLASS_FQN,
+                    LockInterceptorStaticAccessor.ENTER_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE));
         }
 
         return monitorEnterInsn.size();
@@ -144,8 +144,8 @@ class LocksTransformer implements ClassFileTransformer {
 
             // Add invokestatic as last instruction of critical section
             methodNode.instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    LockInterceptor.CLASS_FQN,
-                    LockInterceptor.EXIT_METHOD_NAME, LockInterceptor.ENTER_EXIT_METHOD_SIGNATURE));
+                    LockInterceptorStaticAccessor.CLASS_FQN,
+                    LockInterceptorStaticAccessor.EXIT_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE));
         }
     }
 

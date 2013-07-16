@@ -4,7 +4,7 @@ import java.io.PrintStream;
 
 public class SimpleLogger {
 
-    static SimpleLogger LOG = new SimpleLogger(Level.WARN);
+    static SimpleLogger LOG = new SimpleLogger(Level.INFO);
 
 
     private final Level level;
