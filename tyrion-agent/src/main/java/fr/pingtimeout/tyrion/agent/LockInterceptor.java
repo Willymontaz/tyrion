@@ -20,6 +20,7 @@ package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.EventsHolder;
 import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
+import fr.pingtimeout.tyrion.util.EventsWriter;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
 
 import javax.management.MBeanServer;
@@ -62,15 +63,20 @@ public class LockInterceptor implements LockInterceptorMXBean {
 
     // Note : this method is called dynamically
     public void enteredCriticalSection(Object lock) {
-        if (enabled.get()) {
+        if (enabled.get() && eventNotCausedByEventsWriter()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewEntry(Thread.currentThread(), lock);
         }
     }
 
+    private boolean eventNotCausedByEventsWriter() {
+        String currentThreadName = Thread.currentThread().getName();
+        return !EventsWriter.THREAD_NAME.equals(currentThreadName);
+    }
+
     // Note : this method is called dynamically
     public void leavingCriticalSection(Object lock) {
-        if (enabled.get()) {
+        if (enabled.get() && eventNotCausedByEventsWriter()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewExit(Thread.currentThread(), lock);
         }

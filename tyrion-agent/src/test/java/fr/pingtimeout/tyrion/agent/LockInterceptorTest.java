@@ -1,8 +1,11 @@
 package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.EventsHolder;
+import fr.pingtimeout.tyrion.util.EventsWriter;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.mockito.Mockito.*;
@@ -47,7 +50,7 @@ public class LockInterceptorTest {
         lockInterceptor.enteredCriticalSection(lock);
 
         // Then
-        verify(eventsHolder, never()).recordNewEntry(Thread.currentThread(), lock);
+        verifyZeroInteractions(eventsHolder);
     }
 
     @Test
@@ -61,6 +64,50 @@ public class LockInterceptorTest {
         lockInterceptor.leavingCriticalSection(lock);
 
         // Then
-        verify(eventsHolder, never()).recordNewExit(Thread.currentThread(), lock);
+        verifyZeroInteractions(eventsHolder);
+    }
+
+    @Test
+    public void test_entry_in_critical_section_from_events_writer_thread() throws InterruptedException {
+        // Given
+        EventsHolder eventsHolder = mock(EventsHolder.class);
+        final LockInterceptor lockInterceptor = new LockInterceptor(eventsHolder, new AtomicBoolean(true));
+        final Object lock = new Object();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                lockInterceptor.enteredCriticalSection(lock);
+            }
+        };
+        Thread eventsWriterThread = new Thread(runnable, EventsWriter.THREAD_NAME);
+
+        // When
+        eventsWriterThread.start();
+        eventsWriterThread.join(TimeUnit.SECONDS.toMillis(1));
+
+        // Then
+        verifyZeroInteractions(eventsHolder);
+    }
+
+    @Test
+    public void test_exit_from_critical_section_from_events_writer_thread() throws InterruptedException {
+        // Given
+        EventsHolder eventsHolder = mock(EventsHolder.class);
+        final LockInterceptor lockInterceptor = new LockInterceptor(eventsHolder, new AtomicBoolean(true));
+        final Object lock = new Object();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                lockInterceptor.leavingCriticalSection(lock);
+            }
+        };
+        Thread eventsWriterThread = new Thread(runnable, EventsWriter.THREAD_NAME);
+
+        // When
+        eventsWriterThread.start();
+        eventsWriterThread.join(TimeUnit.SECONDS.toMillis(1));
+
+        // Then
+        verifyZeroInteractions(eventsHolder);
     }
 }

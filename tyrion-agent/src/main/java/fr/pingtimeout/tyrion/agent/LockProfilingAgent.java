@@ -79,7 +79,7 @@ public class LockProfilingAgent {
         final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                Thread t = new Thread(r, "Tyrion locks writer");
+                Thread t = new Thread(r, EventsWriter.THREAD_NAME);
                 t.setDaemon(true);
                 return t;
             }
