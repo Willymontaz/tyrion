@@ -20,20 +20,45 @@ package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.EventsHolder;
 import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
+import fr.pingtimeout.tyrion.util.SimpleLogger;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LockInterceptor {
-    private static LockInterceptor INSTANCE = new LockInterceptor(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
+public class LockInterceptor implements LockInterceptorMXBean {
+
+    private static LockInterceptor INSTANCE = newLockInterceptor();
+
 
     private final EventsHolder eventsHolder;
+
+
     private final AtomicBoolean enabled;
 
     LockInterceptor(EventsHolder eventsHolder, AtomicBoolean enabled) {
         this.eventsHolder = eventsHolder;
         this.enabled = enabled;
     }
+
+
+    @Override
+    public boolean isEnabled() {
+        return enabled.get();
+    }
+
+    @Override
+    public void setEnabled(boolean newState) {
+        if (newState) {
+            SimpleLogger.info("Enabling locks interception.");
+        } else {
+            SimpleLogger.info("Disabling locks interception.");
+        }
+        this.enabled.getAndSet(newState);
+    }
+
 
     // Note : this method is called dynamically
     public void enteredCriticalSection(Object lock) {
@@ -43,9 +68,8 @@ public class LockInterceptor {
         }
     }
 
-
     // Note : this method is called dynamically
-    public  void leavingCriticalSection(Object lock) {
+    public void leavingCriticalSection(Object lock) {
         if (enabled.get()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewExit(Thread.currentThread(), lock);
@@ -57,6 +81,25 @@ public class LockInterceptor {
         Throwable exception = new Throwable("");
         StackTraceElement[] stackTrace = exception.getStackTrace();
         return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
+    }
+
+
+    private static LockInterceptor newLockInterceptor() {
+        LockInterceptor lockInterceptor = new LockInterceptor(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
+
+        try {
+            Class<LockInterceptor> lockInterceptorClass = LockInterceptor.class;
+            String mxBeanName = String.format("%s:type=%s", lockInterceptorClass.getPackage().getName(), lockInterceptorClass.getSimpleName());
+            ObjectName objectName = null;
+            objectName = new ObjectName(mxBeanName);
+            MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+            platformMBeanServer.registerMBean(lockInterceptor, objectName);
+        } catch (Exception e) {
+            SimpleLogger.warn("Could not register LockInterceptor as an MX Bean. Locks interception cannot be enabled. Cause : %s", e.getMessage());
+            SimpleLogger.debug(e);
+        }
+
+        return lockInterceptor;
     }
 
     public static LockInterceptor getInstance() {
