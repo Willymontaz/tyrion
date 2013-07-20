@@ -31,23 +31,23 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class LockProfilingAgent {
-
     /**
      * JVM hook to statically load the javaagent at startup.
      * <p/>
      * After the Java Virtual Machine (JVM) has initialized, the premain method
      * will be called. Then the real application main method will be called.
      *
-     * @param args The agent's arguments, not used
+     * @param args The agent's arguments
      * @param inst The instrumentation class that will be used
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        String arguments = args == null ? "" : args;
-        SimpleLogger.info("Tyrion agent starting with arguments '%s'", arguments);
+        String safeArgs = args == null ? "" : args;
+        SimpleLogger.info("Tyrion agent starting with arguments '%s'", safeArgs);
 
-        if (arguments.startsWith("outputFile=")) {
-            final String outputFile = arguments.substring("outputFile=".length());
+
+        if (safeArgs.startsWith("outputFile=")) {
+            final String outputFile = safeArgs.substring("outputFile=".length());
 
             clearOutputFile(outputFile);
             scheduleLocksWrite(outputFile);
