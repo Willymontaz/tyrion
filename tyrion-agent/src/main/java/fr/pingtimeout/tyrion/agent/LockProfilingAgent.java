@@ -42,21 +42,21 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        String safeArgs = args == null ? "" : args;
-        SimpleLogger.info("Tyrion agent starting with arguments '%s'", safeArgs);
+        Configuration configured = new Configuration(args);
+        Configuration.ParameterValue outputFileParameter = configured.outputFile();
 
+        if (outputFileParameter.isDefaultValue()) {
+            SimpleLogger.warn("No output file was provided, agent is disabled");
+        } else {
+            SimpleLogger.info("Tyrion agent starting with arguments '%s'", configured);
 
-        if (safeArgs.startsWith("outputFile=")) {
-            final String outputFile = safeArgs.substring("outputFile=".length());
+            final String outputFile = outputFileParameter.getValue();
 
             clearOutputFile(outputFile);
             scheduleLocksWrite(outputFile);
 
             addLocksTransformer(inst);
-        } else {
-            SimpleLogger.warn("No output file was provided, agent is disabled");
         }
-
     }
 
 

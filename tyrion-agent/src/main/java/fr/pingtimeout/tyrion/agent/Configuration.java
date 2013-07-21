@@ -24,9 +24,9 @@ import java.util.*;
 
 public class Configuration {
 
-    private static char ARGUMENT_SEPARATOR = ':';
-    private static char VALUES_SEPARATOR = ',';
-    private static char NAME_VALUE_SEPARATOR = '=';
+    private static final char ARGUMENT_SEPARATOR = ';';
+    private static final char VALUES_SEPARATOR = ',';
+    private static final char NAME_VALUE_SEPARATOR = '=';
 
 
     private final Map<Parameter, ParameterValue> parameters = new HashMap<>();
@@ -83,6 +83,11 @@ public class Configuration {
     }
 
 
+    @Override
+    public String toString() {
+        return parameters.values().toString();
+    }
+
     static enum Parameter {
         OUTPUT_FILE("output-file", ""),
         INCLUDED_THREADS("included-threads", ""),
@@ -112,7 +117,7 @@ public class Configuration {
     static class ParameterValue {
 
         private final Parameter parameter;
-        private final Set<String> values;
+        private final String[] values;
 
 
         ParameterValue(Parameter parameter) {
@@ -124,28 +129,29 @@ public class Configuration {
                 throw new IllegalArgumentException("Invalid character '" + NAME_VALUE_SEPARATOR + "' in " + parameter.name);
             }
 
-            String[] values = value.split(String.valueOf(VALUES_SEPARATOR));
-
             this.parameter = parameter;
-            this.values = new HashSet<>(values.length);
-            Collections.addAll(this.values, values);
+            this.values = value.split(String.valueOf(VALUES_SEPARATOR));
         }
 
 
         public boolean isDefaultValue() {
-            // safe-use of identity comparator on array for default value
-            return values.size() == 1 && values.contains(parameter.defaultValue);
+            return values.length == 1 && values[0].equals(parameter.defaultValue);
         }
 
 
-        public Set<String> getValues() {
+        public String[] getValues() {
             return values;
+        }
+
+
+        public String getValue() {
+            return values[0];
         }
 
 
         @Override
         public String toString() {
-            return parameter.name + "=" + values;
+            return parameter.name + "=" + Arrays.toString(values);
         }
     }
 }

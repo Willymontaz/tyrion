@@ -13,7 +13,7 @@
  * for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this work; if not, see <http://www.gnu.org/licenses/>.
+ * along with this work; if not, see <http;//www.gnu.org/licenses/>.
  */
 
 package fr.pingtimeout.tyrion.agent;
@@ -45,8 +45,8 @@ public class ConfigurationTest {
         final String excludedThreadsParam = "excluded-threads=RMI TCP Connection(1)-127.0.0.1,RMI TCP Connection(2)-127.0.0.1";
 
         final Configuration configuration = new Configuration(outputFileParam
-                + ":" + includedThreadsParam
-                + ":" + excludedThreadsParam);
+                + ";" + includedThreadsParam
+                + ";" + excludedThreadsParam);
 
         // When
         Configuration.ParameterValue outputFileValue = configuration.outputFile();
@@ -67,11 +67,11 @@ public class ConfigurationTest {
     public void should_revert_to_default_values_if_invalid_parameters() {
         // Given
         String argumentsWithTooManyEquals = "output-file=/tmp/output-file"
-                + ":" + "included-threads=main="
-                + ":" + "excluded-threads=RMI===";
+                + ";" + "included-threads=main="
+                + ";" + "excluded-threads=RMI===";
         String argumentsWithTooManyColons = "output-file=/tmp/output-file"
-                + ":" + "included-threads=:::"
-                + ":" + "excluded-threads=";
+                + ";" + "included-threads=;;;"
+                + ";" + "excluded-threads=";
         String argumentsWithUnknownParam = "foo=bar";
 
         // When
