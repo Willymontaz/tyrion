@@ -20,13 +20,14 @@ package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.EventsHolder;
 import fr.pingtimeout.tyrion.util.EventsHolderSingleton;
-import fr.pingtimeout.tyrion.util.EventsWriter;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LockInterceptor implements LockInterceptorMXBean {
@@ -36,12 +37,15 @@ public class LockInterceptor implements LockInterceptorMXBean {
 
     private final EventsHolder eventsHolder;
 
-
     private final AtomicBoolean enabled;
+
+    private final Set<String> excludedThreads;
+
 
     LockInterceptor(EventsHolder eventsHolder, AtomicBoolean enabled) {
         this.eventsHolder = eventsHolder;
         this.enabled = enabled;
+        excludedThreads = new HashSet<>();
     }
 
 
@@ -53,7 +57,7 @@ public class LockInterceptor implements LockInterceptorMXBean {
     @Override
     public void setEnabled(boolean newState) {
         if (newState) {
-            SimpleLogger.info("Enabling locks interception.");
+            SimpleLogger.info("Enabling locks interception excepted for %s.", excludedThreads);
         } else {
             SimpleLogger.info("Disabling locks interception.");
         }
@@ -63,23 +67,31 @@ public class LockInterceptor implements LockInterceptorMXBean {
 
     // Note : this method is called dynamically
     public void enteredCriticalSection(Object lock) {
-        if (enabled.get() && eventNotCausedByEventsWriter()) {
+        if (enabled.get() && shouldIncludeThread()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewEntry(Thread.currentThread(), lock);
         }
     }
 
-    private boolean eventNotCausedByEventsWriter() {
-        String currentThreadName = Thread.currentThread().getName();
-        return !EventsWriter.THREAD_NAME.equals(currentThreadName);
-    }
-
     // Note : this method is called dynamically
     public void leavingCriticalSection(Object lock) {
-        if (enabled.get() && eventNotCausedByEventsWriter()) {
+        if (enabled.get() && shouldIncludeThread()) {
             StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewExit(Thread.currentThread(), lock);
         }
+    }
+
+    private boolean shouldIncludeThread() {
+        String currentThreadName = Thread.currentThread().getName();
+
+        boolean causedByExcludedThread = false;
+        for (String excludedThreadName : excludedThreads) {
+            if (currentThreadName.equals(excludedThreadName)) {
+                causedByExcludedThread = true;
+            }
+        }
+
+        return !causedByExcludedThread;
     }
 
 
@@ -87,6 +99,11 @@ public class LockInterceptor implements LockInterceptorMXBean {
         Throwable exception = new Throwable("");
         StackTraceElement[] stackTrace = exception.getStackTrace();
         return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
+    }
+
+
+    public void addExcludedThread(String threadName) {
+        this.excludedThreads.add(threadName);
     }
 
 

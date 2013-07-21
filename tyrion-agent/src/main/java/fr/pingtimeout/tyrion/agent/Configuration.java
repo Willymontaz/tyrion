@@ -78,10 +78,6 @@ public class Configuration {
         return parameters.get(Parameter.EXCLUDED_THREADS);
     }
 
-    public ParameterValue includedThreads() {
-        return parameters.get(Parameter.INCLUDED_THREADS);
-    }
-
 
     @Override
     public String toString() {
@@ -90,7 +86,6 @@ public class Configuration {
 
     static enum Parameter {
         OUTPUT_FILE("output-file", ""),
-        INCLUDED_THREADS("included-threads", ""),
         EXCLUDED_THREADS("excluded-threads", "");
 
 

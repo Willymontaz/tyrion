@@ -68,11 +68,12 @@ public class LockInterceptorTest {
     }
 
     @Test
-    public void test_entry_in_critical_section_from_events_writer_thread() throws InterruptedException {
+    public void test_entry_in_critical_section_from_excluded_thread() throws InterruptedException {
         // Given
         EventsHolder eventsHolder = mock(EventsHolder.class);
         final LockInterceptor lockInterceptor = new LockInterceptor(eventsHolder, new AtomicBoolean(true));
         final Object lock = new Object();
+        lockInterceptor.addExcludedThread(EventsWriter.THREAD_NAME);
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -90,11 +91,12 @@ public class LockInterceptorTest {
     }
 
     @Test
-    public void test_exit_from_critical_section_from_events_writer_thread() throws InterruptedException {
+    public void test_exit_from_critical_section_from_excluded_thread() throws InterruptedException {
         // Given
         EventsHolder eventsHolder = mock(EventsHolder.class);
         final LockInterceptor lockInterceptor = new LockInterceptor(eventsHolder, new AtomicBoolean(true));
         final Object lock = new Object();
+        lockInterceptor.addExcludedThread(EventsWriter.THREAD_NAME);
         Runnable runnable = new Runnable() {
             @Override
             public void run() {

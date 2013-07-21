@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -42,23 +43,22 @@ public class LockProfilingAgent {
      * @throws Exception
      */
     public static void premain(String args, Instrumentation inst) throws Exception {
-        Configuration configured = new Configuration(args);
-        Configuration.ParameterValue outputFileParameter = configured.outputFile();
+        Configuration configuration = new Configuration(args);
+        Configuration.ParameterValue outputFileParameter = configuration.outputFile();
 
         if (outputFileParameter.isDefaultValue()) {
             SimpleLogger.warn("No output file was provided, agent is disabled");
         } else {
-            SimpleLogger.info("Tyrion agent starting with arguments '%s'", configured);
+            SimpleLogger.info("Tyrion agent starting with arguments '%s'", configuration);
 
             final String outputFile = outputFileParameter.getValue();
 
             clearOutputFile(outputFile);
             scheduleLocksWrite(outputFile);
-
-            addLocksTransformer(inst);
+            configureLockInterceptor(configuration);
+            addLocksTransformer(inst, configuration);
         }
     }
-
 
     private static void clearOutputFile(String outputFile) {
         try (FileOutputStream erasor = new FileOutputStream(outputFile)) {
@@ -70,7 +70,7 @@ public class LockProfilingAgent {
     }
 
 
-    private static void addLocksTransformer(Instrumentation inst) {
+    private static void addLocksTransformer(Instrumentation inst, Configuration configuration) {
         inst.addTransformer(new LocksTransformer());
     }
 
@@ -85,5 +85,15 @@ public class LockProfilingAgent {
             }
         });
         executorService.scheduleAtFixedRate(new EventsWriter(outputFile), 1, 1, TimeUnit.SECONDS);
+    }
+
+
+    private static void configureLockInterceptor(Configuration configuration) {
+        LockInterceptor lockInterceptor = LockInterceptor.getInstance();
+
+        Configuration.ParameterValue excludedThreadsParam = configuration.excludedThreads();
+        for (String excludedThreadName : excludedThreadsParam.getValues()) {
+            lockInterceptor.addExcludedThread(excludedThreadName);
+        }
     }
 }

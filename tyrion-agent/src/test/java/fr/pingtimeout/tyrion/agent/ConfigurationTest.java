@@ -41,24 +41,19 @@ public class ConfigurationTest {
     public void should_return_the_given_values_for_valid_parameters() {
         // Given
         final String outputFileParam = "output-file=/tmp/output-file";
-        final String includedThreadsParam = "included-threads=main,gc";
         final String excludedThreadsParam = "excluded-threads=RMI TCP Connection(1)-127.0.0.1,RMI TCP Connection(2)-127.0.0.1";
 
         final Configuration configuration = new Configuration(outputFileParam
-                + ";" + includedThreadsParam
                 + ";" + excludedThreadsParam);
 
         // When
         Configuration.ParameterValue outputFileValue = configuration.outputFile();
         Configuration.ParameterValue excludedThreadsValue = configuration.excludedThreads();
-        Configuration.ParameterValue includedThreadsValue = configuration.includedThreads();
 
         // Then
         assertThat(outputFileValue.isDefaultValue()).isFalse();
         assertThat(excludedThreadsValue.isDefaultValue()).isFalse();
-        assertThat(includedThreadsValue.isDefaultValue()).isFalse();
         assertThat(outputFileValue.getValues()).containsOnly("/tmp/output-file");
-        assertThat(includedThreadsValue.getValues()).containsOnly("main", "gc");
         assertThat(excludedThreadsValue.getValues()).containsOnly("RMI TCP Connection(1)-127.0.0.1", "RMI TCP Connection(2)-127.0.0.1");
     }
 
@@ -89,9 +84,7 @@ public class ConfigurationTest {
     private void assertDefaultConfiguration(Configuration configuration) {
         assertThat(configuration.outputFile().isDefaultValue());
         assertThat(configuration.excludedThreads().isDefaultValue());
-        assertThat(configuration.includedThreads().isDefaultValue());
         assertThat(configuration.outputFile().getValues()).containsOnly("");
-        assertThat(configuration.includedThreads().getValues()).containsOnly("");
         assertThat(configuration.excludedThreads().getValues()).containsOnly("");
     }
 
