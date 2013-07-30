@@ -119,15 +119,15 @@ public class GUI extends JFrame {
     }
 
     public static void main(String[] args) throws Exception {
-//        new GUI();
-        ObjectMapper mapper = new ObjectMapper();
+        new GUI();
+//        ObjectMapper mapper = new ObjectMapper();
 //        CriticalSectionEntered event = mapper.readValue("" +
 //                "{\"type\": \"enter\", \"timestamp\": \"1372764787117\", \"accessor\": { \"id\" : \"java.lang.Thread@1\", \"name\" : \"main\" }, \"target\": \"class HelloWorld@607033405\"}",
 //                CriticalSectionEntered.class);
 
-        System.out.println(
-                mapper.readValue(
-                        "{\"enter\":{\"timestamp\":1372770101098,\"accessor\":{\"id\":1,\"name\":\"main\"},\"target\":{\"hashcode\":672184983,\"className\":\"HelloWorld\"}}}",
-                        CriticalSectionEntered.class));
+//        System.out.println(
+//                mapper.readValue(
+//                        "{\"enter\":{\"timestamp\":1372770101098,\"accessor\":{\"id\":1,\"name\":\"main\"},\"target\":{\"hashcode\":672184983,\"className\":\"HelloWorld\"}}}",
+//                        CriticalSectionEntered.class));
     }
 }

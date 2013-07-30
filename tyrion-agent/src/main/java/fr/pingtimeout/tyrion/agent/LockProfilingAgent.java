@@ -56,7 +56,7 @@ public class LockProfilingAgent {
             clearOutputFile(outputFile);
             scheduleLocksWrite(outputFile);
             configureLockInterceptor(configuration);
-            addLocksTransformer(inst, configuration);
+            addLocksTransformer(inst);
         }
     }
 
@@ -70,7 +70,7 @@ public class LockProfilingAgent {
     }
 
 
-    private static void addLocksTransformer(Instrumentation inst, Configuration configuration) {
+    private static void addLocksTransformer(Instrumentation inst) {
         inst.addTransformer(new LocksTransformer());
     }
 
