@@ -68,7 +68,7 @@ public class LockInterceptor implements LockInterceptorMXBean {
     // Note : this method is called dynamically
     public void enteredCriticalSection(Object lock) {
         if (enabled.get() && shouldIncludeThread()) {
-            StackTraceElement[] filteredStackTrace = createStackTrace();
+//            StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewEntry(Thread.currentThread(), lock);
         }
     }
@@ -76,7 +76,7 @@ public class LockInterceptor implements LockInterceptorMXBean {
     // Note : this method is called dynamically
     public void leavingCriticalSection(Object lock) {
         if (enabled.get() && shouldIncludeThread()) {
-            StackTraceElement[] filteredStackTrace = createStackTrace();
+//            StackTraceElement[] filteredStackTrace = createStackTrace();
             eventsHolder.recordNewExit(Thread.currentThread(), lock);
         }
     }

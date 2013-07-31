@@ -52,7 +52,11 @@ public class EventsWriter implements Runnable {
 
     private void writeEvents(BufferedWriter writer, Long threadId) throws IOException {
         List<CriticalSectionEvent> accessorEvents = EventsHolderSingleton.INSTANCE.getAndClearEventsListOf(threadId);
-        for (CriticalSectionEvent accessorEvent : accessorEvents) {
+
+        // Careful ! This list is a Cons-List with items being head-appended
+        // Iterate through the list in the reverse order
+        for (int i = accessorEvents.length() - 1; i >= 0; i--) {
+            CriticalSectionEvent accessorEvent = accessorEvents.index(i);
             writer.write(jsonMapper.writeValueAsString(accessorEvent));
             writer.write("\n");
         }
