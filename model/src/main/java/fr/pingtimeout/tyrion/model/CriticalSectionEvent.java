@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = CriticalSectionEntered.class, name = "enter"),
         @JsonSubTypes.Type(value = CriticalSectionExit.class, name = "exit")
 })
-public abstract class CriticalSectionEvent {
+public abstract class CriticalSectionEvent implements Comparable<CriticalSectionEvent> {
 
     private final long timestamp;
 
@@ -24,6 +24,20 @@ public abstract class CriticalSectionEvent {
         this.accessor = new Accessor(accessingThread);
         this.target = new Target(objectUnderLock);
     }
+
+
+    @Override
+    public int compareTo(CriticalSectionEvent that) {
+        long timestampComparison = this.timestamp - that.timestamp;
+        if (timestampComparison == 0) {
+            int thisPriority = this instanceof CriticalSectionEntered ? 0 : 1;
+            int thatPriority = that instanceof CriticalSectionEntered ? 0 : 1;
+            return thisPriority - thatPriority;
+        } else {
+            return (int) timestampComparison;
+        }
+    }
+
 
     // Constructor and getters required by Jackson unmashalling process
     @JsonCreator
@@ -58,5 +72,3 @@ public abstract class CriticalSectionEvent {
                 '}';
     }
 }
-
-
