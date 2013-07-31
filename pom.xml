@@ -34,7 +34,7 @@
     </properties>
 
     <modules>
-        <module>tyrion-agent</module>
+        <module>agent</module>
         <module>model</module>
         <module>gui</module>
     </modules>
