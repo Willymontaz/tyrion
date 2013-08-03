@@ -18,14 +18,14 @@ public class LocksFileReader {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 
-    private final Logger logger = Logger.getLogger(getClass().getName());
+    private final Logger logger;
 
-    private final Map<Accessor, Set<Access>> criticalSectionsPerAccessor;
-    private final Map<Target, Set<Access>> criticalSectionsPerTarget;
+    private final Set<Access> criticalSections;
+
 
     public LocksFileReader(InputStream inputStream) {
-        criticalSectionsPerAccessor = new HashMap<>();
-        criticalSectionsPerTarget = new HashMap<>();
+        logger = Logger.getLogger(getClass().getName());
+        criticalSections = new TreeSet<>();
 
         loadFile(inputStream);
     }
@@ -64,38 +64,14 @@ public class LocksFileReader {
         if (lastEnter == null) {
             logger.log(Level.FINE, "Got 'exit' without matching 'enter', ignoring event", exit);
         } else {
-            Access criticalSection = new Access(lastEnter.getTimestamp(), exit.getTimestamp(), accessor, lastEnter.getTarget());
-            addAccess(criticalSection);
+            Access criticalSection = new Access(
+                    lastEnter.getTimestamp(), exit.getTimestamp(),
+                    accessor,
+                    lastEnter.getTarget());
+
+            criticalSections.add(criticalSection);
             lastEnterInCriticalSection.remove(accessor);
         }
-    }
-
-
-    private void addAccess(Access access) {
-        addAccessForAccessor(access);
-        addAccessForTarget(access);
-    }
-
-    private void addAccessForAccessor(Access access) {
-        Accessor accessor = access.getAccessor();
-
-        if (!criticalSectionsPerAccessor.containsKey(accessor)) {
-            criticalSectionsPerAccessor.put(accessor, new TreeSet<Access>());
-        }
-
-        Set<Access> criticalSectionsForAccessor = criticalSectionsPerAccessor.get(accessor);
-        criticalSectionsForAccessor.add(access);
-    }
-
-    private void addAccessForTarget(Access access) {
-        Target target = access.getTarget();
-
-        if (!criticalSectionsPerTarget.containsKey(target)) {
-            criticalSectionsPerTarget.put(target, new TreeSet<Access>());
-        }
-
-        Set<Access> criticalSectionsForTarget = criticalSectionsPerTarget.get(target);
-        criticalSectionsForTarget.add(access);
     }
 
 
@@ -112,6 +88,6 @@ public class LocksFileReader {
 
 
     public AccessReport buildAccessReport() {
-        return new AccessReport(criticalSectionsPerAccessor, criticalSectionsPerTarget);
+        return new AccessReport(criticalSections);
     }
 }
