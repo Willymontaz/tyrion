@@ -12,14 +12,10 @@ public class Access implements Comparable<Access> {
     private final Target target;
 
 
-    public Access(AccessDuration accessDuration, Accessor accessor, Target target) {
-        this.accessDuration = accessDuration;
+    public Access(long enterTime, long exitTime, Accessor accessor, Target target) {
+        this.accessDuration = new AccessDuration(enterTime, exitTime);
         this.accessor = accessor;
         this.target = target;
-    }
-
-    public Access(long enterTime, long exitTime, Accessor accessor, Target target) {
-        this(new AccessDuration(enterTime, exitTime), accessor, target);
     }
 
 

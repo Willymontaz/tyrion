@@ -1,9 +1,6 @@
 package fr.pingtimeout.tyrion.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class AccessReport {
 
@@ -46,12 +43,21 @@ public class AccessReport {
     }
 
 
-    public Set<Access> getCriticalSectionsForAccessor(Accessor accessor) {
+    public Set<Access> retrieveCriticalSectionsFor(Accessor accessor) {
         return criticalSectionsPerAccessor.get(accessor);
     }
 
-
-    public Set<Access> getCriticalSectionsForLock(Target lock) {
+    public Set<Access> retrieveCriticalSectionsFor(Target lock) {
         return criticalSectionsPerTarget.get(lock);
+    }
+
+    public int countDifferentAccessorsFor(Target lock) {
+        Set<Access> accesses = retrieveCriticalSectionsFor(lock);
+        Set<Accessor> accessors = new HashSet<>();
+        for (Access access : accesses) {
+            accessors.add(access.getAccessor());
+        }
+
+        return accessors.size();
     }
 }
