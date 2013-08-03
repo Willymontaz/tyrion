@@ -1,41 +1,79 @@
 package fr.pingtimeout.tyrion.model;
 
-public class Access implements Comparable<Access> {
-    private final long enterTime;
-    private final long exitTime;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
-    public Access(long enterTime, long exitTime) {
-        this.enterTime = enterTime;
-        this.exitTime = exitTime;
+public class Access implements Comparable<Access> {
+
+
+    private final AccessDuration accessDuration;
+    private final Accessor accessor;
+    private final Target target;
+
+
+    public Access(AccessDuration accessDuration, Accessor accessor, Target target) {
+        this.accessDuration = accessDuration;
+        this.accessor = accessor;
+        this.target = target;
     }
+
+    public Access(long enterTime, long exitTime, Accessor accessor, Target target) {
+        this(new AccessDuration(enterTime, exitTime), accessor, target);
+    }
+
+
 
     @Override
     public int compareTo(Access that) {
-        return (int) (this.enterTime - that.enterTime);
+        return this.accessDuration.compareTo(that.accessDuration);
     }
+
+
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o instanceof Access) {
+            Access that = (Access) o;
 
-        Access access = (Access) o;
-
-        if (enterTime != access.enterTime) return false;
-        if (exitTime != access.exitTime) return false;
-
-        return true;
+            return new EqualsBuilder()
+                    .append(this.accessDuration, that.accessDuration)
+                    .append(this.accessor, that.accessor)
+                    .append(this.target, that.target)
+                    .build();
+        } else {
+            return false;
+        }
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (enterTime ^ (enterTime >>> 32));
-        result = 31 * result + (int) (exitTime ^ (exitTime >>> 32));
-        return result;
+        return new HashCodeBuilder()
+                .append(this.accessDuration)
+                .append(this.accessor)
+                .append(this.target)
+                .build();
     }
 
     @Override
     public String toString() {
-        return "[" + enterTime + ", " + exitTime + ']';
+        return new ToStringBuilder(this)
+                .append(this.accessDuration)
+                .append(this.accessor)
+                .append(this.target)
+                .build();
+    }
+
+
+    public AccessDuration getAccessDuration() {
+        return accessDuration;
+    }
+
+    public Accessor getAccessor() {
+        return accessor;
+    }
+
+    public Target getTarget() {
+        return target;
     }
 }
