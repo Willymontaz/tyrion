@@ -121,4 +121,15 @@ public class AccessReport {
         }
         return contendedAccesses;
     }
+
+
+    public Map<Target, Set<Access>> retrieveAllContendedAccesses(int delta, TimeUnit unit) {
+        final Map<Target, Set<Access>> contendedAccessesPerLock = new HashMap<>();
+
+        for (Target lock : criticalSectionsPerTarget.keySet()) {
+            contendedAccessesPerLock.put(lock, retrieveContendedAccesses(lock, delta, unit));
+        }
+
+        return contendedAccessesPerLock;
+    }
 }

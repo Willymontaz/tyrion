@@ -1,15 +1,18 @@
 package fr.pingtimeout.tyrion.model;
 
 import org.apache.commons.io.IOUtils;
+import org.assertj.core.data.MapEntry;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocksFileReaderTest {
+
 
     @Test
     public void should_transform_events_into_accesses_accessible_by_thread() {
@@ -80,6 +83,7 @@ public class LocksFileReaderTest {
         assertThat(lock2CriticalSections).containsOnly(accessFromThread1ToLock2, accessFromThread2ToLock2);
     }
 
+
     @Test
     public void should_count_accesses_by_monitor() {
         // Given
@@ -107,6 +111,7 @@ public class LocksFileReaderTest {
         assertThat(accessorsOfLock1).isEqualTo(1);
         assertThat(accessorsOfLock2).isEqualTo(2);
     }
+
 
     @Test
     public void should_detect_frequent_accesses_with_margin() {
@@ -172,6 +177,44 @@ public class LocksFileReaderTest {
 
         // Then
         assertThat(contentedAccesses).containsOnly(accessFromThread1At100, accessFromThread2At102);
+    }
+
+
+    @Test
+    public void should_detect_contended_accesses_on_all_locks() {
+        // Given
+        String events = ""
+                + "{\"enter\":{\"timestamp\":100,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"exit\":{\"timestamp\":101,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"enter\":{\"timestamp\":102,\"accessor\":{\"id\":2,\"name\":\"Thread 2\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"exit\":{\"timestamp\":103,\"accessor\":{\"id\":2,\"name\":\"Thread 2\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+
+                + "{\"enter\":{\"timestamp\":110,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":9876543211,\"className\":\"java.lang.Object\"}}}\n"
+                + "{\"exit\":{\"timestamp\":111,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":9876543211,\"className\":\"java.lang.Object\"}}}\n"
+                + "{\"enter\":{\"timestamp\":112,\"accessor\":{\"id\":2,\"name\":\"Thread 2\"},\"target\":{\"hashcode\":9876543211,\"className\":\"java.lang.Object\"}}}\n"
+                + "{\"exit\":{\"timestamp\":113,\"accessor\":{\"id\":2,\"name\":\"Thread 2\"},\"target\":{\"hashcode\":9876543211,\"className\":\"java.lang.Object\"}}}\n";
+        InputStream inputStream = IOUtils.toInputStream(events);
+
+        Accessor accessor1 = new Accessor(1L, "Thread 1");
+        Accessor accessor2 = new Accessor(2L, "Thread 2");
+        Target lock1 = new Target("java.lang.Class", 1690956574L);
+        Target lock2 = new Target("java.lang.Object", 9876543211L);
+
+        Access accessOfLock1FromThread1At100 = new Access(100L, 101L, accessor1, lock1);
+        Access accessOfLock1FromThread2At102 = new Access(102L, 103L, accessor2, lock1);
+        Access accessOfLock2FromThread1At110 = new Access(110L, 111L, accessor1, lock2);
+        Access accessOfLock2FromThread2At112 = new Access(112L, 113L, accessor2, lock2);
+
+
+        // When
+        AccessReport accessReport = new LocksFileReader(inputStream).buildAccessReport();
+
+        Map<Target, Set<Access>> contentedAccesses = accessReport.retrieveAllContendedAccesses(1, TimeUnit.MILLISECONDS);
+
+
+        // Then
+        assertThat(contentedAccesses.get(lock1)).containsOnly(accessOfLock1FromThread1At100, accessOfLock1FromThread2At102);
+        assertThat(contentedAccesses.get(lock2)).containsOnly(accessOfLock2FromThread1At110, accessOfLock2FromThread2At112);
     }
 
 
