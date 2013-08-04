@@ -15,13 +15,13 @@ public class AccessReport {
         criticalSectionsPerTarget = new HashMap<>();
 
         for (Access access : criticalSections) {
-            addAccessForAccessor(access);
-            addAccessForTarget(access);
+            indexAccessByAccessor(access);
+            indexAccessByTarget(access);
         }
     }
 
 
-    private void addAccessForAccessor(Access access) {
+    private void indexAccessByAccessor(Access access) {
         Accessor accessor = access.getAccessor();
 
         if (!criticalSectionsPerAccessor.containsKey(accessor)) {
@@ -32,7 +32,7 @@ public class AccessReport {
         criticalSectionsForAccessor.add(access);
     }
 
-    private void addAccessForTarget(Access access) {
+    private void indexAccessByTarget(Access access) {
         Target target = access.getTarget();
 
         if (!criticalSectionsPerTarget.containsKey(target)) {
@@ -52,6 +52,7 @@ public class AccessReport {
         return criticalSectionsPerTarget.get(lock);
     }
 
+
     public int countDifferentAccessorsFor(Target lock) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
         Set<Accessor> accessors = new HashSet<>();
@@ -62,46 +63,62 @@ public class AccessReport {
         return accessors.size();
     }
 
+
     public Set<Access> retrieveFrequentAccesses(Target lock, int delta, TimeUnit unit) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
-        Set<Access> frequentAccesses = new TreeSet<>();
 
         if (accesses.size() > 1) {
-            Iterator<Access> iterator = accesses.iterator();
-            Access lastAccess = iterator.next();
-            while (iterator.hasNext()) {
-                Access access = iterator.next();
+            return safeRetrieveConsecutiveAccessesWithin(delta, unit, accesses);
+        } else {
+            return new HashSet<>();
+        }
+    }
 
-                boolean matchesLast = lastAccess.matches(access, delta, unit);
-                if(matchesLast) {
-                    frequentAccesses.add(lastAccess);
-                    frequentAccesses.add(access);
-                }
-                lastAccess = access;
+    private Set<Access> safeRetrieveConsecutiveAccessesWithin(int delta, TimeUnit unit, Set<Access> accesses) {
+        Set<Access> frequentAccesses = new TreeSet<>();
+        Iterator<Access> iterator = accesses.iterator();
+
+        Access lastAccess = iterator.next();
+        while (iterator.hasNext()) {
+            Access access = iterator.next();
+
+            boolean accessesWithinSameTimeFraction = lastAccess.matches(access, delta, unit);
+            if (accessesWithinSameTimeFraction) {
+                frequentAccesses.add(lastAccess);
+                frequentAccesses.add(access);
             }
+            lastAccess = access;
         }
 
         return frequentAccesses;
     }
 
+
     public Set<Access> retrieveContendedAccesses(Target lock, int delta, TimeUnit unit) {
         Set<Access> frequentAccesses = retrieveFrequentAccesses(lock, delta, unit);
-        Set<Access> contendedAccesses = new TreeSet<>();
 
-        if(frequentAccesses.size() > 1) {
-            Iterator<Access> iterator = frequentAccesses.iterator();
-            Access lastAccess = iterator.next();
-            while (iterator.hasNext()) {
-                Access access = iterator.next();
-
-                if(!lastAccess.isAccessedBy(access.getAccessor())) {
-                    contendedAccesses.add(lastAccess);
-                    contendedAccesses.add(access);
-                }
-                lastAccess = access;
-            }
+        if (frequentAccesses.size() > 1) {
+            return safeRetrieveConsecutiveAccessesByDifferentAccessors(frequentAccesses);
+        } else {
+            return new HashSet<>();
         }
+    }
 
+    private Set<Access> safeRetrieveConsecutiveAccessesByDifferentAccessors(Set<Access> frequentAccesses) {
+        Set<Access> contendedAccesses = new TreeSet<>();
+        Iterator<Access> iterator = frequentAccesses.iterator();
+
+        Access lastAccess = iterator.next();
+        while (iterator.hasNext()) {
+            Access access = iterator.next();
+
+            boolean accessesByDifferentThreads = !lastAccess.isAccessedBy(access.getAccessor());
+            if (accessesByDifferentThreads) {
+                contendedAccesses.add(lastAccess);
+                contendedAccesses.add(access);
+            }
+            lastAccess = access;
+        }
         return contendedAccesses;
     }
 }
