@@ -79,4 +79,8 @@ public class Access implements Comparable<Access> {
     public boolean matches(Access that, int delta, TimeUnit unit) {
         return this.time.matches(that.time, delta, unit);
     }
+
+    public boolean isAccessedBy(Accessor accessor) {
+        return this.accessor.equals(accessor);
+    }
 }

@@ -126,6 +126,7 @@ public class LocksFileReaderTest {
         Accessor accessor2 = new Accessor(2L, "Thread 2");
         Target lock1 = new Target("java.lang.Class", 1690956574L);
 
+        Access accessFromThread1At95 = new Access(95L, 96L, accessor1, lock1);
         Access accessFromThread1At100 = new Access(100L, 101L, accessor1, lock1);
         Access accessFromThread2At102 = new Access(102L, 103L, accessor2, lock1);
 
@@ -133,11 +134,45 @@ public class LocksFileReaderTest {
         // When
         AccessReport accessReport = new LocksFileReader(inputStream).buildAccessReport();
 
-        Set<Access> contentedAccesses = accessReport.retrieveFrequentAccesses(lock1, 1, TimeUnit.MILLISECONDS);
+        Set<Access> contentedAccesses = accessReport.retrieveFrequentAccesses(lock1, 4, TimeUnit.MILLISECONDS);
+
+
+        // Then
+        assertThat(contentedAccesses).containsOnly(accessFromThread1At95, accessFromThread1At100, accessFromThread2At102);
+    }
+
+
+    @Test
+    public void should_detect_contended_accesses_with_margin() {
+        // Given
+        String events = ""
+                + "{\"enter\":{\"timestamp\":95,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"exit\":{\"timestamp\":96,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"enter\":{\"timestamp\":100,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"exit\":{\"timestamp\":101,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"enter\":{\"timestamp\":102,\"accessor\":{\"id\":2,\"name\":\"Thread 2\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"exit\":{\"timestamp\":103,\"accessor\":{\"id\":2,\"name\":\"Thread 2\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"enter\":{\"timestamp\":108,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n"
+                + "{\"exit\":{\"timestamp\":110,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":1690956574,\"className\":\"java.lang.Class\"}}}\n";
+        InputStream inputStream = IOUtils.toInputStream(events);
+
+        Accessor accessor1 = new Accessor(1L, "Thread 1");
+        Accessor accessor2 = new Accessor(2L, "Thread 2");
+        Target lock1 = new Target("java.lang.Class", 1690956574L);
+
+        Access accessFromThread1At100 = new Access(100L, 101L, accessor1, lock1);
+        Access accessFromThread2At102 = new Access(102L, 103L, accessor2, lock1);
+
+
+        // When
+        AccessReport accessReport = new LocksFileReader(inputStream).buildAccessReport();
+
+        Set<Access> contentedAccesses = accessReport.retrieveContendedAccesses(lock1, 4, TimeUnit.MILLISECONDS);
 
 
         // Then
         assertThat(contentedAccesses).containsOnly(accessFromThread1At100, accessFromThread2At102);
     }
+
 
 }

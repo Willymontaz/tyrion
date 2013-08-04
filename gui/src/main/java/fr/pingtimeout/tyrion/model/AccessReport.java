@@ -64,7 +64,7 @@ public class AccessReport {
 
     public Set<Access> retrieveFrequentAccesses(Target lock, int delta, TimeUnit unit) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
-        Set<Access> contendedAccesses = new TreeSet<>();
+        Set<Access> frequentAccesses = new TreeSet<>();
 
         if (accesses.size() > 1) {
             Iterator<Access> iterator = accesses.iterator();
@@ -74,6 +74,27 @@ public class AccessReport {
 
                 boolean matchesLast = lastAccess.matches(access, delta, unit);
                 if(matchesLast) {
+                    frequentAccesses.add(lastAccess);
+                    frequentAccesses.add(access);
+                }
+                lastAccess = access;
+            }
+        }
+
+        return frequentAccesses;
+    }
+
+    public Set<Access> retrieveContendedAccesses(Target lock, int delta, TimeUnit unit) {
+        Set<Access> frequentAccesses = retrieveFrequentAccesses(lock, delta, unit);
+        Set<Access> contendedAccesses = new TreeSet<>();
+
+        if(frequentAccesses.size() > 1) {
+            Iterator<Access> iterator = frequentAccesses.iterator();
+            Access lastAccess = iterator.next();
+            while (iterator.hasNext()) {
+                Access access = iterator.next();
+
+                if(!lastAccess.isAccessedBy(access.getAccessor())) {
                     contendedAccesses.add(lastAccess);
                     contendedAccesses.add(access);
                 }
