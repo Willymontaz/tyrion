@@ -7,13 +7,13 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 public class Access implements Comparable<Access> {
 
 
-    private final AccessDuration accessDuration;
+    private final Time time;
     private final Accessor accessor;
     private final Target target;
 
 
     public Access(long enterTime, long exitTime, Accessor accessor, Target target) {
-        this.accessDuration = new AccessDuration(enterTime, exitTime);
+        this.time = new Time(enterTime, exitTime);
         this.accessor = accessor;
         this.target = target;
     }
@@ -22,7 +22,7 @@ public class Access implements Comparable<Access> {
 
     @Override
     public int compareTo(Access that) {
-        return this.accessDuration.compareTo(that.accessDuration);
+        return this.time.compareTo(that.time);
     }
 
 
@@ -33,7 +33,7 @@ public class Access implements Comparable<Access> {
             Access that = (Access) o;
 
             return new EqualsBuilder()
-                    .append(this.accessDuration, that.accessDuration)
+                    .append(this.time, that.time)
                     .append(this.accessor, that.accessor)
                     .append(this.target, that.target)
                     .build();
@@ -45,7 +45,7 @@ public class Access implements Comparable<Access> {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .append(this.accessDuration)
+                .append(this.time)
                 .append(this.accessor)
                 .append(this.target)
                 .build();
@@ -54,15 +54,15 @@ public class Access implements Comparable<Access> {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append(this.accessDuration)
+                .append(this.time)
                 .append(this.accessor)
                 .append(this.target)
                 .build();
     }
 
 
-    public AccessDuration getAccessDuration() {
-        return accessDuration;
+    public Time getTime() {
+        return time;
     }
 
     public Accessor getAccessor() {
