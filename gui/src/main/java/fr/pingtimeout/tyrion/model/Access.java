@@ -3,6 +3,9 @@ package fr.pingtimeout.tyrion.model;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.concurrent.TimeUnit;
 
 public class Access implements Comparable<Access> {
 
@@ -53,7 +56,7 @@ public class Access implements Comparable<Access> {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append(this.time)
                 .append(this.accessor)
                 .append(this.target)
@@ -71,5 +74,9 @@ public class Access implements Comparable<Access> {
 
     public Target getTarget() {
         return target;
+    }
+
+    public boolean matches(Access that, int delta, TimeUnit unit) {
+        return this.time.matches(that.time, delta, unit);
     }
 }

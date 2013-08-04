@@ -1,6 +1,7 @@
 package fr.pingtimeout.tyrion.model;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class AccessReport {
 
@@ -59,5 +60,27 @@ public class AccessReport {
         }
 
         return accessors.size();
+    }
+
+    public Set<Access> retrieveFrequentAccesses(Target lock, int delta, TimeUnit unit) {
+        Set<Access> accesses = retrieveCriticalSectionsFor(lock);
+        Set<Access> contendedAccesses = new TreeSet<>();
+
+        if (accesses.size() > 1) {
+            Iterator<Access> iterator = accesses.iterator();
+            Access lastAccess = iterator.next();
+            while (iterator.hasNext()) {
+                Access access = iterator.next();
+
+                boolean matchesLast = lastAccess.matches(access, delta, unit);
+                if(matchesLast) {
+                    contendedAccesses.add(lastAccess);
+                    contendedAccesses.add(access);
+                }
+                lastAccess = access;
+            }
+        }
+
+        return contendedAccesses;
     }
 }
