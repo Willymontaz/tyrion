@@ -8,10 +8,8 @@ public class GUI {
 
     public static void main(String[] args) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-//        CriticalSectionEvent event = mapper.readValue(
         CriticalSectionEntered event = mapper.readValue(
                 "{\"enter\":{\"timestamp\":1372770101098,\"accessor\":{\"id\":1,\"name\":\"main\"},\"target\":{\"hashcode\":672184983,\"className\":\"HelloWorld\"}}}",
-//                CriticalSectionEvent.class);
                 CriticalSectionEntered.class);
 
         System.out.println(event);
