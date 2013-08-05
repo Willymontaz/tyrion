@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -94,6 +93,11 @@ public class LockProfilingAgent {
         Configuration.ParameterValue excludedThreadsParam = configuration.excludedThreads();
         for (String excludedThreadName : excludedThreadsParam.getValues()) {
             lockInterceptor.addExcludedThread(excludedThreadName);
+        }
+
+        String enabledAtStartup = configuration.isEnabledAtStartup().getValue();
+        if (Boolean.valueOf(enabledAtStartup)) {
+            lockInterceptor.setEnabled(true);
         }
     }
 }

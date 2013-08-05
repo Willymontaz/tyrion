@@ -20,7 +20,9 @@ package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.SimpleLogger;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Configuration {
 
@@ -78,6 +80,10 @@ public class Configuration {
         return parameters.get(Parameter.EXCLUDED_THREADS);
     }
 
+    public ParameterValue isEnabledAtStartup() {
+        return parameters.get(Parameter.ENABLED_AT_STARTUP);
+    }
+
 
     @Override
     public String toString() {
@@ -86,7 +92,8 @@ public class Configuration {
 
     static enum Parameter {
         OUTPUT_FILE("output-file", ""),
-        EXCLUDED_THREADS("excluded-threads", "");
+        EXCLUDED_THREADS("excluded-threads", ""),
+        ENABLED_AT_STARTUP("enabled-at-startup", "false");
 
 
         private final String name;
