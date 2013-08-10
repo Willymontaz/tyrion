@@ -13,7 +13,7 @@ public class EventsWriter implements Runnable {
 
     public static final boolean DO_APPEND = true;
 
-    public static final String THREAD_NAME = "Tyrion locks writer";
+    public static final String THREAD_NAME = "TyrionLocksWriter";
 
     private final ObjectMapper jsonMapper;
 

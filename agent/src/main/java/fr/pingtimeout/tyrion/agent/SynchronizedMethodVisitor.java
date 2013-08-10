@@ -23,6 +23,9 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class SynchronizedMethodVisitor extends ClassVisitor {
 
 
@@ -59,20 +62,38 @@ class SynchronizedMethodVisitor extends ClassVisitor {
 
 
     public static String accessToString(int access) {
+        Map<Integer, String> opCodes = opCodeToString();
+
         StringBuilder result = new StringBuilder();
-        if ((access & Opcodes.ACC_ABSTRACT) != 0) result.append(" abstract");
-        if ((access & Opcodes.ACC_BRIDGE) != 0) result.append(" bridge");
-        if ((access & Opcodes.ACC_DEPRECATED) != 0) result.append(" deprecated");
-        if ((access & Opcodes.ACC_FINAL) != 0) result.append(" final");
-        if ((access & Opcodes.ACC_NATIVE) != 0) result.append(" native");
-        if ((access & Opcodes.ACC_PRIVATE) != 0) result.append(" private");
-        if ((access & Opcodes.ACC_PROTECTED) != 0) result.append(" protected");
-        if ((access & Opcodes.ACC_PUBLIC) != 0) result.append(" public");
-        if ((access & Opcodes.ACC_STATIC) != 0) result.append(" static");
-        if ((access & Opcodes.ACC_STRICT) != 0) result.append(" strict");
-        if ((access & Opcodes.ACC_SYNCHRONIZED) != 0) result.append(" synchronized");
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0) result.append(" synthetic");
-        if ((access & Opcodes.ACC_VARARGS) != 0) result.append(" varargs");
+        for (Map.Entry<Integer, String> opCodeEntry : opCodes.entrySet()) {
+            int opCode = opCodeEntry.getKey();
+            String opCodeToString = opCodeEntry.getValue();
+
+            if ((access & opCode) != 0) {
+                result.append(opCodeToString);
+            }
+        }
+
         return result.toString();
+    }
+
+    private static Map<Integer, String> opCodeToString() {
+        Map<Integer, String> opCodes = new HashMap<>();
+
+        opCodes.put(Opcodes.ACC_ABSTRACT, " abstract");
+        opCodes.put(Opcodes.ACC_BRIDGE, " bridge");
+        opCodes.put(Opcodes.ACC_DEPRECATED, " deprecated");
+        opCodes.put(Opcodes.ACC_FINAL, " final");
+        opCodes.put(Opcodes.ACC_NATIVE, " native");
+        opCodes.put(Opcodes.ACC_PRIVATE, " private");
+        opCodes.put(Opcodes.ACC_PROTECTED, " protected");
+        opCodes.put(Opcodes.ACC_PUBLIC, " public");
+        opCodes.put(Opcodes.ACC_STATIC, " static");
+        opCodes.put(Opcodes.ACC_STRICT, " strict");
+        opCodes.put(Opcodes.ACC_SYNCHRONIZED, " synchronized");
+        opCodes.put(Opcodes.ACC_SYNTHETIC, " synthetic");
+        opCodes.put(Opcodes.ACC_VARARGS, " varargs");
+
+        return opCodes;
     }
 }

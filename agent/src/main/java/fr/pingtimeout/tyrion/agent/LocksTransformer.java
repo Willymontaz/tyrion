@@ -38,7 +38,7 @@ import java.util.ListIterator;
 class LocksTransformer implements ClassFileTransformer {
 
 
-    private final static boolean PRINT_BYTECODE = false;
+    private static final boolean PRINT_BYTECODE = false;
 
 
     @Override
@@ -89,33 +89,33 @@ class LocksTransformer implements ClassFileTransformer {
             blocksIntercepted += interceptAllSynchronizedBlocks(classNode, methodNode);
         }
 
-        if (blocksIntercepted != 0)
+        if (blocksIntercepted != 0) {
             SimpleLogger.debug("Intercepted %s synchronized blocks in %s", blocksIntercepted, classNode.name);
+        }
     }
 
 
     private int interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
         int numberOfBlocksIntercepted = 0;
-        InsnList instructions = methodNode.instructions;
         if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
             SimpleLogger.debug("%s::%s is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
             SimpleLogger.debug("Intercepting all synchronized blocks of %s::%s", classNode.name, methodNode.name);
-            numberOfBlocksIntercepted += interceptSynchronizedBlocks(classNode, methodNode, instructions);
+            numberOfBlocksIntercepted += interceptSynchronizedBlocks(methodNode);
         }
         return numberOfBlocksIntercepted;
     }
 
 
-    private int interceptSynchronizedBlocks(ClassNode classNode, MethodNode methodNode, InsnList instructions) {
-        int numberOfBlocksIntercepted = interceptMonitorEnter(classNode, methodNode);
-        interceptMonitorExit(classNode, methodNode);
+    private int interceptSynchronizedBlocks(MethodNode methodNode) {
+        int numberOfBlocksIntercepted = interceptMonitorEnter(methodNode);
+        interceptMonitorExit(methodNode);
         return numberOfBlocksIntercepted;
     }
 
 
-    private int interceptMonitorEnter(ClassNode classNode, MethodNode methodNode) {
-        Collection<AbstractInsnNode> monitorEnterInsn = extractMonitorEnterInsn(classNode, methodNode);
+    private int interceptMonitorEnter(MethodNode methodNode) {
+        Collection<AbstractInsnNode> monitorEnterInsn = extractMonitorEnterInsn(methodNode);
 
         for (AbstractInsnNode monitorEnterInsnNode : monitorEnterInsn) {
             // Duplicate lock
@@ -134,8 +134,8 @@ class LocksTransformer implements ClassFileTransformer {
     }
 
 
-    private void interceptMonitorExit(ClassNode classNode, MethodNode methodNode) {
-        Collection<AbstractInsnNode> monitorExitInsn = extractMonitorExitInsn(classNode, methodNode);
+    private void interceptMonitorExit(MethodNode methodNode) {
+        Collection<AbstractInsnNode> monitorExitInsn = extractMonitorExitInsn(methodNode);
 
         for (AbstractInsnNode monitorExitInsnNode : monitorExitInsn) {
             // Duplicate lock
@@ -150,20 +150,19 @@ class LocksTransformer implements ClassFileTransformer {
     }
 
 
-    private Collection<AbstractInsnNode> extractMonitorEnterInsn(ClassNode classNode, MethodNode methodNode) {
-        return extractInstructions(classNode, methodNode, Opcodes.MONITORENTER, "MonitorEnter");
+    private Collection<AbstractInsnNode> extractMonitorEnterInsn(MethodNode methodNode) {
+        return extractInstructions(methodNode, Opcodes.MONITORENTER);
     }
 
 
-    private Collection<AbstractInsnNode> extractMonitorExitInsn(ClassNode classNode, MethodNode methodNode) {
-        return extractInstructions(classNode, methodNode, Opcodes.MONITOREXIT, "MonitorExit");
+    private Collection<AbstractInsnNode> extractMonitorExitInsn(MethodNode methodNode) {
+        return extractInstructions(methodNode, Opcodes.MONITOREXIT);
     }
 
 
     @SuppressWarnings("unchecked")
-    private Collection<AbstractInsnNode> extractInstructions(ClassNode classNode, MethodNode methodNode,
-                                                             int instructionToExtract, String instructionAsString) {
-        Collection<AbstractInsnNode> monitorEnterInsn = new ArrayList<AbstractInsnNode>();
+    private Collection<AbstractInsnNode> extractInstructions(MethodNode methodNode, int instructionToExtract) {
+        Collection<AbstractInsnNode> monitorEnterInsn = new ArrayList<>();
         ListIterator<AbstractInsnNode> iterator = methodNode.instructions.iterator();
         while (iterator.hasNext()) {
             AbstractInsnNode insnNode = iterator.next();

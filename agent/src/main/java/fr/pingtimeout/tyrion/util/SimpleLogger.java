@@ -4,7 +4,7 @@ import java.io.PrintStream;
 
 public class SimpleLogger {
 
-    static SimpleLogger LOG = new SimpleLogger(Level.INFO);
+    static SimpleLogger log = new SimpleLogger(Level.INFO);
 
 
     private final Level level;
@@ -24,32 +24,37 @@ public class SimpleLogger {
 
 
     void warnMessage(String message, Object... args) {
-        if (level.isWarnEnabled())
+        if (level.isWarnEnabled()) {
             printf("WARN ", message, args);
+        }
     }
 
 
     void infoMessage(String message, Object... args) {
-        if (level.isInfoEnabled())
+        if (level.isInfoEnabled()) {
             printf("INFO ", message, args);
+        }
     }
 
 
     void debugMessage(String message, Object... args) {
-        if (level.isDebugEnabled())
+        if (level.isDebugEnabled()) {
             printf("DEBUG", message, args);
+        }
     }
 
 
     void debugMessage(Exception e) {
-        if (level.isDebugEnabled())
+        if (level.isDebugEnabled()) {
             e.printStackTrace(out);
+        }
     }
 
 
     void traceMessage(String message, Object... args) {
-        if (level.isTraceEnabled())
+        if (level.isTraceEnabled()) {
             printf("TRACE", message, args);
+        }
     }
 
 
@@ -59,27 +64,27 @@ public class SimpleLogger {
 
 
     public static void warn(String message, Object... args) {
-        LOG.warnMessage(message, args);
+        log.warnMessage(message, args);
     }
 
 
     public static void info(String message, Object... args) {
-        LOG.infoMessage(message, args);
+        log.infoMessage(message, args);
     }
 
 
     public static void debug(String message, Object... args) {
-        LOG.debugMessage(message, args);
+        log.debugMessage(message, args);
     }
 
 
     public static void debug(Exception e) {
-        LOG.debugMessage(e);
+        log.debugMessage(e);
     }
 
 
     public static void trace(String message, Object... args) {
-        LOG.traceMessage(message, args);
+        log.traceMessage(message, args);
     }
 
 

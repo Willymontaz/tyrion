@@ -106,10 +106,19 @@ public class Configuration {
         }
 
 
+        String getName() {
+            return name;
+        }
+
+        String getDefaultValue() {
+            return defaultValue;
+        }
+
         static Parameter fromName(String argument) {
             for (Parameter parameter : values()) {
-                if (argument.equals(parameter.name))
+                if (argument.equals(parameter.name)) {
                     return parameter;
+                }
             }
             throw new IllegalArgumentException("Unknown argument : " + argument);
         }
@@ -123,12 +132,12 @@ public class Configuration {
 
 
         ParameterValue(Parameter parameter) {
-            this(parameter, parameter.defaultValue);
+            this(parameter, parameter.getDefaultValue());
         }
 
         ParameterValue(Parameter parameter, String value) {
             if (value.indexOf(NAME_VALUE_SEPARATOR) != -1) {
-                throw new IllegalArgumentException("Invalid character '" + NAME_VALUE_SEPARATOR + "' in " + parameter.name);
+                throw new IllegalArgumentException("Invalid character '" + NAME_VALUE_SEPARATOR + "' in " + parameter.getName());
             }
 
             this.parameter = parameter;
@@ -137,7 +146,7 @@ public class Configuration {
 
 
         public boolean isDefaultValue() {
-            return values.length == 1 && values[0].equals(parameter.defaultValue);
+            return values.length == 1 && values[0].equals(parameter.getDefaultValue());
         }
 
 
@@ -153,7 +162,7 @@ public class Configuration {
 
         @Override
         public String toString() {
-            return parameter.name + "=" + Arrays.toString(values);
+            return parameter.getName() + "=" + Arrays.toString(values);
         }
     }
 }

@@ -106,7 +106,7 @@ public class SimpleLoggerTest {
     public void static_methods_should_delegate_to_logger() {
         // Given
         SimpleLogger simpleLogger = mock(SimpleLogger.class);
-        SimpleLogger.LOG = simpleLogger;
+        SimpleLogger.log = simpleLogger;
         Object[] args = {"Foo", "bar"};
         String message = "Test String";
         Exception exception = new Exception();
