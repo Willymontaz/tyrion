@@ -127,7 +127,10 @@ public class AccessReport {
         final Map<Target, Set<Access>> contendedAccessesPerLock = new HashMap<>();
 
         for (Target lock : criticalSectionsPerTarget.keySet()) {
-            contendedAccessesPerLock.put(lock, retrieveContendedAccesses(lock, delta, unit));
+            Set<Access> contendedAccesses = retrieveContendedAccesses(lock, delta, unit);
+            if (contendedAccesses.size() > 0) {
+                contendedAccessesPerLock.put(lock, contendedAccesses);
+            }
         }
 
         return contendedAccessesPerLock;

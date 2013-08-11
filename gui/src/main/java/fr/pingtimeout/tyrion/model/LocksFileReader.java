@@ -2,10 +2,7 @@ package fr.pingtimeout.tyrion.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +19,17 @@ public class LocksFileReader {
 
     private final Set<Access> criticalSections;
 
+
+    public LocksFileReader(File file) {
+        logger = Logger.getLogger(getClass().getName());
+        criticalSections = new TreeSet<>();
+
+        try (InputStream inputStream = new FileInputStream(file)) {
+            loadFile(inputStream);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not load file " + file, e);
+        }
+    }
 
     public LocksFileReader(InputStream inputStream) {
         logger = Logger.getLogger(getClass().getName());
