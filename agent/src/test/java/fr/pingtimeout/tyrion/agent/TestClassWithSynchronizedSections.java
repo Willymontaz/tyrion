@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Lukasz Celeban
+ * Copyright (c) 2013, Pierre Laporte
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER
  *
@@ -16,10 +16,20 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion.transformation.source;
+package fr.pingtimeout.tyrion.agent;
 
-public interface ProtectedBlock {
-    void invoke();
+public class TestClassWithSynchronizedSections {
+    public synchronized int someSynchronizedMethod() {
+        return 42;
+    }
 
-    Object getLock();
+    public static synchronized int someStaticSynchronizedMethod() {
+        return 1337;
+    }
+
+    public int methodWithSynchronizedBlock() {
+        synchronized (this) {
+            return 0;
+        }
+    }
 }

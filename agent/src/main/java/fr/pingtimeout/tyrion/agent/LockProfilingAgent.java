@@ -18,7 +18,7 @@
 
 package fr.pingtimeout.tyrion.agent;
 
-import fr.pingtimeout.tyrion.transformation.TyrionTransformer;
+import fr.pingtimeout.tyrion.transformation.CriticalSectionsInterceptor;
 import fr.pingtimeout.tyrion.util.EventsWriter;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
 
@@ -56,7 +56,7 @@ public class LockProfilingAgent {
             clearOutputFile(outputFile);
             scheduleLocksWrite(outputFile);
             configureLockInterceptor(configuration);
-            addLocksTransformer(inst);
+            instrumentLocks(inst);
         }
     }
 
@@ -70,8 +70,8 @@ public class LockProfilingAgent {
     }
 
 
-    private static void addLocksTransformer(Instrumentation inst) {
-        inst.addTransformer(new LocksTransformer(new TyrionTransformer()));
+    private static void instrumentLocks(Instrumentation inst) {
+        inst.addTransformer(new CriticalSectionsInterceptor());
     }
 
 

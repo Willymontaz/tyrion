@@ -33,34 +33,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-public class TyrionTransformer {
-
-    private static final boolean PRINT_BYTECODE = false;
-
-    public byte[] transform(String className, byte[] classfileBuffer) {
-        ClassReader reader = new ClassReader(classfileBuffer);
-        ClassNode classNode = new ClassNode();
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-
-        final ClassVisitor syncMethodsVisitor;
-        if (PRINT_BYTECODE) {
-            ClassVisitor traceClassVisitor = new TraceClassVisitor(writer, new PrintWriter(System.out));
-            syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, traceClassVisitor, className);
-        } else {
-            syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, writer, className);
-        }
-
-        // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
-        reader.accept(classNode, 0);
-        interceptAllSynchronizedBlocks(classNode);
-        classNode.accept(syncMethodsVisitor);
+class SynchronizedBlockTransformer {
 
 
-        return writer.toByteArray();
+    private final ClassNode classNode;
+
+
+    SynchronizedBlockTransformer(ClassNode classNode) {
+        this.classNode = classNode;
     }
 
 
-    private void interceptAllSynchronizedBlocks(ClassNode classNode) {
+    void interceptAllSynchronizedBlocks() {
         @SuppressWarnings("unchecked")
         List<MethodNode> methods = classNode.methods;
 

@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Configuration {
+class Configuration {
 
     private static final char ARGUMENT_SEPARATOR = ';';
     private static final char VALUES_SEPARATOR = ',';
