@@ -46,43 +46,50 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         SimpleLogger.debug("Entering synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
-            // Retrieve Class object that is subject to lock
-            mv.visitLdcInsn(className);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    "java/lang/Class",
-                    "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+            putClassOnTheStack();
         } else {
-            // Retrieve Object that is subject to lock
-            mv.visitVarInsn(ALOAD, 0);
+            putThisOnTheStack();
         }
-
-        mv.visitMethodInsn(INVOKESTATIC,
-                LockInterceptorStaticAccessor.CLASS_FQN,
-                LockInterceptorStaticAccessor.ENTER_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
+        recordEnter();
 
         super.onMethodEnter();
     }
-
 
     @Override
     protected void onMethodExit(int opcode) {
         SimpleLogger.debug("Leaving synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
-            // Retrieve Class object that is subject to lock
-            mv.visitLdcInsn(className);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    "java/lang/Class",
-                    "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+            putClassOnTheStack();
         } else {
-            // Retrieve Object that is subject to lock
-            mv.visitVarInsn(ALOAD, 0);
+            putThisOnTheStack();
         }
+        recordExit();
 
+        super.onMethodExit(opcode);
+    }
+
+
+    private void putThisOnTheStack() {
+        mv.visitVarInsn(ALOAD, 0);
+    }
+
+    private void putClassOnTheStack() {
+        mv.visitLdcInsn(className);
+        mv.visitMethodInsn(INVOKESTATIC,
+                "java/lang/Class",
+                "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+    }
+
+    private void recordEnter() {
+        mv.visitMethodInsn(INVOKESTATIC,
+                LockInterceptorStaticAccessor.CLASS_FQN,
+                LockInterceptorStaticAccessor.ENTER_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
+    }
+
+    private void recordExit() {
         mv.visitMethodInsn(INVOKESTATIC,
                 LockInterceptorStaticAccessor.CLASS_FQN,
                 LockInterceptorStaticAccessor.EXIT_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
-
-        super.onMethodExit(opcode);
     }
 }
