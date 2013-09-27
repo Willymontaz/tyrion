@@ -34,13 +34,13 @@ public class fr/pingtimeout/tyrion/agent/TestClassWithSynchronizedSections {
   // access flags 0x29
   public static synchronized someStaticSynchronizedMethod()I
     LDC "fr.pingtimeout.tyrion.agent.TestClassWithSynchronizedSections"
-    INVOKESTATIC java/lang/Class.forName (Ljava/lang/String;)Ljava/lang/Class;
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/LockInterceptorStaticAccessor.classForName (Ljava/lang/String;)Ljava/lang/Class;
     INVOKESTATIC fr/pingtimeout/tyrion/agent/LockInterceptorStaticAccessor.enteredCriticalSection (Ljava/lang/Object;)V
    L0
     LINENUMBER 27 L0
     SIPUSH 1337
     LDC "fr.pingtimeout.tyrion.agent.TestClassWithSynchronizedSections"
-    INVOKESTATIC java/lang/Class.forName (Ljava/lang/String;)Ljava/lang/Class;
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/LockInterceptorStaticAccessor.classForName (Ljava/lang/String;)Ljava/lang/Class;
     INVOKESTATIC fr/pingtimeout/tyrion/agent/LockInterceptorStaticAccessor.leavingCriticalSection (Ljava/lang/Object;)V
     IRETURN
     MAXSTACK = 1

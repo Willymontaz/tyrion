@@ -77,8 +77,8 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     private void putClassOnTheStack() {
         mv.visitLdcInsn(className);
         mv.visitMethodInsn(INVOKESTATIC,
-                "java/lang/Class",
-                "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+                LockInterceptorStaticAccessor.CLASS_FQN,
+                LockInterceptorStaticAccessor.CLASS_FORNAME_METHOD_NAME, LockInterceptorStaticAccessor.CLASS_FORNAME_METHOD_SIGNATURE);
     }
 
     private void recordEnter() {

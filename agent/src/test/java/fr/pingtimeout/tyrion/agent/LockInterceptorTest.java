@@ -2,6 +2,7 @@ package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.EventsHolder;
 import fr.pingtimeout.tyrion.util.EventsWriter;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -92,6 +93,19 @@ public class LockInterceptorTest {
 
         // Then
         verifyZeroInteractions(eventsHolder);
+    }
+
+    @Test
+    public void should_retrieve_a_class_by_its_name_and_classloader() {
+        // Given
+        EventsHolder eventsHolder = mock(EventsHolder.class);
+        LockInterceptor lockInterceptor = new LockInterceptor(eventsHolder, new AtomicBoolean(true));
+
+        // When
+        Class<?> result = lockInterceptor.classForName("java.lang.String");
+
+        // Then
+        Assertions.assertThat(result).isEqualTo(String.class);
     }
 
     @Test

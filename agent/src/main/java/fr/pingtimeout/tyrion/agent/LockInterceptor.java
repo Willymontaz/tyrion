@@ -103,6 +103,15 @@ public class LockInterceptor implements LockInterceptorMXBean {
     }
 
 
+    public Class<?> classForName(String className) {
+        try {
+            return Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException e) {
+            SimpleLogger.warn("Unable to load class %s !");
+            return null;
+        }
+    }
+
     private static LockInterceptor newLockInterceptor() {
         LockInterceptor lockInterceptor = new LockInterceptor(EventsHolderSingleton.INSTANCE, new AtomicBoolean(false));
 

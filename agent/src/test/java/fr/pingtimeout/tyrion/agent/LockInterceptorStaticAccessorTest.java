@@ -1,7 +1,9 @@
 package fr.pingtimeout.tyrion.agent;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -46,5 +48,19 @@ public class LockInterceptorStaticAccessorTest {
 
         // Then
         verify(mockedLockInterceptor).leavingCriticalSection(mockedTarget);
+    }
+
+    @Test
+    public void should_delegate_class_forName_to_LockInterceptor() {
+        // Given
+        LockInterceptor mockedLockInterceptor = mock(LockInterceptor.class);
+        LockInterceptorStaticAccessor.lockInterceptor = mockedLockInterceptor;
+        String className = "java.lang.String";
+
+        // When
+        LockInterceptorStaticAccessor.classForName(className);
+
+        // Then
+        verify(mockedLockInterceptor).classForName(className);
     }
 }
