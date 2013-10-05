@@ -21,5 +21,4 @@ public class CriticalSectionEventTest {
         assertThat(earlyEnterComparedToLaterEnter).isNegative();
         assertThat(earlyExitComparedToLaterExit).isNegative();
     }
-
 }

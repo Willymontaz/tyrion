@@ -34,7 +34,7 @@ public class CriticalSectionEntering extends CriticalSectionEvent {
     protected CriticalSectionEntering(
             @JsonProperty("timestamp") long timestamp,
             @JsonProperty("accessor") Accessor accessor,
-            @JsonProperty("objectUnderLock") ObjectUnderLock objectUnderLock) {
+            @JsonProperty("target") ObjectUnderLock objectUnderLock) {
         super(timestamp, accessor, objectUnderLock);
     }
 }

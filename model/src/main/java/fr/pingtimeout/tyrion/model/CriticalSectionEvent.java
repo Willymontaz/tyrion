@@ -17,6 +17,7 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
 
     private final Accessor accessor;
 
+    @JsonProperty("target")
     private final ObjectUnderLock objectUnderLock;
 
 
