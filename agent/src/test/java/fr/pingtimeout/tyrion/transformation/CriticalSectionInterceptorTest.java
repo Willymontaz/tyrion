@@ -36,7 +36,6 @@ public class CriticalSectionInterceptorTest {
 
     @Test
     public void should_transform_all_synchronized_sections() throws Exception {
-
         // Given
         Class<?> classUnderTest = TestClassWithSynchronizedSections.class;
         String expectedBytecodes = join(

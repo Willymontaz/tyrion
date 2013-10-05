@@ -12,13 +12,13 @@ public class Access implements Comparable<Access> {
 
     private final Time time;
     private final Accessor accessor;
-    private final Target target;
+    private final ObjectUnderLock objectUnderLock;
 
 
-    public Access(long enterTime, long exitTime, Accessor accessor, Target target) {
+    public Access(long enterTime, long exitTime, Accessor accessor, ObjectUnderLock objectUnderLock) {
         this.time = new Time(enterTime, exitTime);
         this.accessor = accessor;
-        this.target = target;
+        this.objectUnderLock = objectUnderLock;
     }
 
 
@@ -38,7 +38,7 @@ public class Access implements Comparable<Access> {
             return new EqualsBuilder()
                     .append(this.time, that.time)
                     .append(this.accessor, that.accessor)
-                    .append(this.target, that.target)
+                    .append(this.objectUnderLock, that.objectUnderLock)
                     .build();
         } else {
             return false;
@@ -50,7 +50,7 @@ public class Access implements Comparable<Access> {
         return new HashCodeBuilder()
                 .append(this.time)
                 .append(this.accessor)
-                .append(this.target)
+                .append(this.objectUnderLock)
                 .build();
     }
 
@@ -59,7 +59,7 @@ public class Access implements Comparable<Access> {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append(this.time)
                 .append(this.accessor)
-                .append(this.target)
+                .append(this.objectUnderLock)
                 .build();
     }
 
@@ -72,8 +72,8 @@ public class Access implements Comparable<Access> {
         return accessor;
     }
 
-    public Target getTarget() {
-        return target;
+    public ObjectUnderLock getObjectUnderLock() {
+        return objectUnderLock;
     }
 
     public boolean matches(Access that, int delta, TimeUnit unit) {

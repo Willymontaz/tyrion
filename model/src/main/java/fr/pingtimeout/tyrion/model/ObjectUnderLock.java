@@ -3,14 +3,14 @@ package fr.pingtimeout.tyrion.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Target {
+public class ObjectUnderLock {
 
     private final String className;
 
     private final long hashcode;
 
 
-    public Target(Object target) {
+    public ObjectUnderLock(Object target) {
         this.className = target.getClass().getName();
         this.hashcode = System.identityHashCode(target);
     }
@@ -18,7 +18,7 @@ public class Target {
 
     // Constructor and getters required by Jackson unmashalling process
     @JsonCreator
-    public Target(
+    public ObjectUnderLock(
             @JsonProperty("class") String className,
             @JsonProperty("hashcode") long hashcode) {
         this.className = className;
@@ -42,12 +42,12 @@ public class Target {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Target)) return false;
+        if (!(o instanceof ObjectUnderLock)) return false;
 
-        Target target = (Target) o;
+        ObjectUnderLock objectUnderLock = (ObjectUnderLock) o;
 
-        if (hashcode != target.hashcode) return false;
-        if (!className.equals(target.className)) return false;
+        if (hashcode != objectUnderLock.hashcode) return false;
+        if (!className.equals(objectUnderLock.className)) return false;
 
         return true;
     }

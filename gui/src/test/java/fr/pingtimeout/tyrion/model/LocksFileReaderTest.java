@@ -27,8 +27,8 @@ public class LocksFileReaderTest {
 
         Accessor accessor1 = new Accessor(1L, "Thread 1");
         Accessor accessor2 = new Accessor(2L, "Thread 2");
-        Target lock1 = new Target("java.lang.Class", 1690956574L);
-        Target lock2 = new Target("java.lang.Object", 2112631749L);
+        ObjectUnderLock lock1 = new ObjectUnderLock("java.lang.Class", 1690956574L);
+        ObjectUnderLock lock2 = new ObjectUnderLock("java.lang.Object", 2112631749L);
 
         Access accessFromThread1ToLock1 = new Access(100L, 101L, accessor1, lock1);
         Access accessFromThread2ToLock2 = new Access(102L, 103L, accessor2, lock2);
@@ -62,8 +62,8 @@ public class LocksFileReaderTest {
 
         Accessor accessor1 = new Accessor(1L, "Thread 1");
         Accessor accessor2 = new Accessor(2L, "Thread 2");
-        Target lock1 = new Target("java.lang.Class", 1690956574L);
-        Target lock2 = new Target("java.lang.Object", 2112631749L);
+        ObjectUnderLock lock1 = new ObjectUnderLock("java.lang.Class", 1690956574L);
+        ObjectUnderLock lock2 = new ObjectUnderLock("java.lang.Object", 2112631749L);
 
         Access accessFromThread1ToLock1 = new Access(100L, 101L, accessor1, lock1);
         Access accessFromThread2ToLock2 = new Access(102L, 103L, accessor2, lock2);
@@ -95,8 +95,8 @@ public class LocksFileReaderTest {
                 + "{\"exit\":{\"timestamp\":107,\"accessor\":{\"id\":1,\"name\":\"Thread 1\"},\"target\":{\"hashcode\":2112631749,\"className\":\"java.lang.Object\"}}}\n";
         InputStream inputStream = IOUtils.toInputStream(events);
 
-        Target lock1 = new Target("java.lang.Class", 1690956574L);
-        Target lock2 = new Target("java.lang.Object", 2112631749L);
+        ObjectUnderLock lock1 = new ObjectUnderLock("java.lang.Class", 1690956574L);
+        ObjectUnderLock lock2 = new ObjectUnderLock("java.lang.Object", 2112631749L);
 
 
         // When
@@ -128,7 +128,7 @@ public class LocksFileReaderTest {
 
         Accessor accessor1 = new Accessor(1L, "Thread 1");
         Accessor accessor2 = new Accessor(2L, "Thread 2");
-        Target lock1 = new Target("java.lang.Class", 1690956574L);
+        ObjectUnderLock lock1 = new ObjectUnderLock("java.lang.Class", 1690956574L);
 
         Access accessFromThread1At95 = new Access(95L, 96L, accessor1, lock1);
         Access accessFromThread1At100 = new Access(100L, 101L, accessor1, lock1);
@@ -162,7 +162,7 @@ public class LocksFileReaderTest {
 
         Accessor accessor1 = new Accessor(1L, "Thread 1");
         Accessor accessor2 = new Accessor(2L, "Thread 2");
-        Target lock1 = new Target("java.lang.Class", 1690956574L);
+        ObjectUnderLock lock1 = new ObjectUnderLock("java.lang.Class", 1690956574L);
 
         Access accessFromThread1At100 = new Access(100L, 101L, accessor1, lock1);
         Access accessFromThread2At102 = new Access(102L, 103L, accessor2, lock1);
@@ -201,9 +201,9 @@ public class LocksFileReaderTest {
         Accessor accessor1 = new Accessor(1L, "Thread 1");
         Accessor accessor2 = new Accessor(2L, "Thread 2");
         Accessor accessor3 = new Accessor(3L, "Thread 3");
-        Target lock1 = new Target("java.lang.Class", 1690956574L);
-        Target lock2 = new Target("java.lang.Object", 9876543211L);
-        Target lock3 = new Target("java.lang.Object", 2222222222L);
+        ObjectUnderLock lock1 = new ObjectUnderLock("java.lang.Class", 1690956574L);
+        ObjectUnderLock lock2 = new ObjectUnderLock("java.lang.Object", 9876543211L);
+        ObjectUnderLock lock3 = new ObjectUnderLock("java.lang.Object", 2222222222L);
 
         Access accessOfLock1FromThread1At100 = new Access(100L, 101L, accessor1, lock1);
         Access accessOfLock1FromThread2At102 = new Access(102L, 103L, accessor2, lock1);
@@ -214,7 +214,7 @@ public class LocksFileReaderTest {
         // When
         AccessReport accessReport = new LocksFileReader(inputStream).buildAccessReport();
 
-        Map<Target, Set<Access>> contentedAccesses = accessReport.retrieveAllContendedAccesses(1, TimeUnit.MILLISECONDS);
+        Map<ObjectUnderLock, Set<Access>> contentedAccesses = accessReport.retrieveAllContendedAccesses(1, TimeUnit.MILLISECONDS);
 
 
         // Then

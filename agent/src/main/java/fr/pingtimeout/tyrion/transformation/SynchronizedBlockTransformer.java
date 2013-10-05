@@ -18,16 +18,11 @@
 
 package fr.pingtimeout.tyrion.transformation;
 
-import fr.pingtimeout.tyrion.agent.LockInterceptorStaticAccessor;
+import fr.pingtimeout.tyrion.agent.StaticAccessor;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
-import org.objectweb.asm.util.TraceClassVisitor;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -90,15 +85,17 @@ class SynchronizedBlockTransformer {
             // Add invokestatic just before critical section
             SimpleLogger.debug("Inserting call to enteringSynchronizedBlock before %s", monitorEnterInsnNode);
             methodNode.instructions.insertBefore(monitorEnterInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    LockInterceptorStaticAccessor.CLASS_FQN,
-                    LockInterceptorStaticAccessor.ENTERING_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE));
+                    StaticAccessor.CLASS_FQN,
+                    StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getMethodName(),
+                    StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getSignature()));
 
             // Add invokestatic as first instruction of critical section
             AbstractInsnNode nodeAfterInterception = monitorEnterInsnNode.getNext();
             SimpleLogger.debug("Inserting call to enteredSynchronizedBlock before %s", nodeAfterInterception);
             methodNode.instructions.insertBefore(nodeAfterInterception, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    LockInterceptorStaticAccessor.CLASS_FQN,
-                    LockInterceptorStaticAccessor.ENTER_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE));
+                    StaticAccessor.CLASS_FQN,
+                    StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getMethodName(),
+                    StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getSignature()));
         }
 
         return monitorEnterInsn.size();
@@ -115,8 +112,9 @@ class SynchronizedBlockTransformer {
 
             // Add invokestatic as last instruction of critical section
             methodNode.instructions.insertBefore(monitorExitInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC,
-                    LockInterceptorStaticAccessor.CLASS_FQN,
-                    LockInterceptorStaticAccessor.EXIT_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE));
+                    StaticAccessor.CLASS_FQN,
+                    StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getMethodName(),
+                    StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getSignature()));
         }
     }
 

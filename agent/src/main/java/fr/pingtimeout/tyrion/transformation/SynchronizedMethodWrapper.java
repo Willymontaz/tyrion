@@ -18,7 +18,7 @@
 
 package fr.pingtimeout.tyrion.transformation;
 
-import fr.pingtimeout.tyrion.agent.LockInterceptorStaticAccessor;
+import fr.pingtimeout.tyrion.agent.StaticAccessor;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -47,10 +47,11 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
 
         if (isStatic(methodAccess)) {
             putClassOnTheStack();
+            recordEnterOnClass();
         } else {
             putThisOnTheStack();
+            recordEnterOnObject();
         }
-        recordEnter();
 
         super.onMethodEnter();
     }
@@ -61,12 +62,36 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
 
         if (isStatic(methodAccess)) {
             putClassOnTheStack();
+            recordExitOnClass();
         } else {
             putThisOnTheStack();
+            recordExitOnObject();
         }
-        recordExit();
 
         super.onMethodExit(opcode);
+    }
+
+
+    private void putClassOnTheStack() {
+        mv.visitLdcInsn(className);
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.GET_CLASS_BY_NAME.getMethodName(), StaticAccessor.GET_CLASS_BY_NAME.getSignature());
+    }
+
+
+    private void recordEnterOnObject() {
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getMethodName(),
+                StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getSignature());
+    }
+
+    private void recordEnterOnClass() {
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.AFTER_MONITORENTER_ON_CLASS.getMethodName(),
+                StaticAccessor.AFTER_MONITORENTER_ON_CLASS.getSignature());
     }
 
 
@@ -74,22 +99,19 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         mv.visitVarInsn(ALOAD, 0);
     }
 
-    private void putClassOnTheStack() {
-        mv.visitLdcInsn(className);
+
+
+    private void recordExitOnObject() {
         mv.visitMethodInsn(INVOKESTATIC,
-                LockInterceptorStaticAccessor.CLASS_FQN,
-                LockInterceptorStaticAccessor.CLASS_FORNAME_METHOD_NAME, LockInterceptorStaticAccessor.CLASS_FORNAME_METHOD_SIGNATURE);
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getMethodName(),
+                StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getSignature());
     }
 
-    private void recordEnter() {
+    private void recordExitOnClass() {
         mv.visitMethodInsn(INVOKESTATIC,
-                LockInterceptorStaticAccessor.CLASS_FQN,
-                LockInterceptorStaticAccessor.ENTER_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
-    }
-
-    private void recordExit() {
-        mv.visitMethodInsn(INVOKESTATIC,
-                LockInterceptorStaticAccessor.CLASS_FQN,
-                LockInterceptorStaticAccessor.EXIT_METHOD_NAME, LockInterceptorStaticAccessor.ENTER_EXIT_METHOD_SIGNATURE);
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.BEFORE_MONITOREXIT_ON_CLASS.getMethodName(),
+                StaticAccessor.BEFORE_MONITOREXIT_ON_CLASS.getSignature());
     }
 }

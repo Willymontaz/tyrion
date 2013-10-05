@@ -17,13 +17,13 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
 
     private final Accessor accessor;
 
-    private final Target target;
+    private final ObjectUnderLock objectUnderLock;
 
 
     public CriticalSectionEvent(Thread accessingThread, Object objectUnderLock) {
         this.timestamp = System.currentTimeMillis();
         this.accessor = new Accessor(accessingThread);
-        this.target = new Target(objectUnderLock);
+        this.objectUnderLock = new ObjectUnderLock(objectUnderLock);
     }
 
 
@@ -45,10 +45,10 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
     protected CriticalSectionEvent(
             @JsonProperty("timestamp") long timestamp,
             @JsonProperty("accessor") Accessor accessor,
-            @JsonProperty("target") Target target) {
+            @JsonProperty("objectUnderLock") ObjectUnderLock objectUnderLock) {
         this.timestamp = timestamp;
         this.accessor = accessor;
-        this.target = target;
+        this.objectUnderLock = objectUnderLock;
     }
 
 
@@ -60,8 +60,8 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
         return accessor;
     }
 
-    public Target getTarget() {
-        return target;
+    public ObjectUnderLock getObjectUnderLock() {
+        return objectUnderLock;
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
         return "CriticalSectionEvent{" +
                 "timestamp=" + timestamp +
                 ", accessor=" + accessor +
-                ", target=" + target +
+                ", objectUnderLock=" + objectUnderLock +
                 '}';
     }
 }

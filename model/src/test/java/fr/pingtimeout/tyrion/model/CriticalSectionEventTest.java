@@ -9,9 +9,9 @@ public class CriticalSectionEventTest {
     @Test
     public void should_sort_events_based_on_timestamp_and_type() {
         // Given
-        CriticalSectionEntered firstAccess = new CriticalSectionEntered(1, mock(Accessor.class), mock(Target.class));
-        CriticalSectionEntered secondAccess = new CriticalSectionEntered(2, mock(Accessor.class), mock(Target.class));
-        CriticalSectionExit thirdAccessAtSameTimestamp = new CriticalSectionExit(2, mock(Accessor.class), mock(Target.class));
+        CriticalSectionEntered firstAccess = new CriticalSectionEntered(1, mock(Accessor.class), mock(ObjectUnderLock.class));
+        CriticalSectionEntered secondAccess = new CriticalSectionEntered(2, mock(Accessor.class), mock(ObjectUnderLock.class));
+        CriticalSectionExit thirdAccessAtSameTimestamp = new CriticalSectionExit(2, mock(Accessor.class), mock(ObjectUnderLock.class));
 
         // When
         int earlyEnterComparedToLaterEnter = firstAccess.compareTo(secondAccess);

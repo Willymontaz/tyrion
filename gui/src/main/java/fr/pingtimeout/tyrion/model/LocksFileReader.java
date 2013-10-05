@@ -78,7 +78,7 @@ public class LocksFileReader {
             Access criticalSection = new Access(
                     lastEnter.getTimestamp(), exit.getTimestamp(),
                     accessor,
-                    lastEnter.getTarget());
+                    lastEnter.getObjectUnderLock());
 
             criticalSections.add(criticalSection);
             lastEnterInCriticalSection.remove(accessor);

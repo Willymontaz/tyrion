@@ -49,6 +49,7 @@ public class EventsHolderSingletonTest {
                 .containsOnly(criticalSectionEvent);
     }
 
+
     @Test
     public void test_record_new_entry() {
         // Given
@@ -65,6 +66,7 @@ public class EventsHolderSingletonTest {
                 .usingElementComparator(new CriticalSectionEventsWithoutTime())
                 .containsOnly(criticalSectionEvent);
     }
+
 
     @Test
     public void test_record_new_exit() {

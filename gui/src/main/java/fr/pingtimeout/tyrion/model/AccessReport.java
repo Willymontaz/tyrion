@@ -7,7 +7,7 @@ public class AccessReport {
 
 
     private final Map<Accessor, Set<Access>> criticalSectionsPerAccessor;
-    private final Map<Target, Set<Access>> criticalSectionsPerTarget;
+    private final Map<ObjectUnderLock, Set<Access>> criticalSectionsPerTarget;
 
 
     public AccessReport(Set<Access> criticalSections) {
@@ -33,13 +33,13 @@ public class AccessReport {
     }
 
     private void indexAccessByTarget(Access access) {
-        Target target = access.getTarget();
+        ObjectUnderLock objectUnderLock = access.getObjectUnderLock();
 
-        if (!criticalSectionsPerTarget.containsKey(target)) {
-            criticalSectionsPerTarget.put(target, new TreeSet<Access>());
+        if (!criticalSectionsPerTarget.containsKey(objectUnderLock)) {
+            criticalSectionsPerTarget.put(objectUnderLock, new TreeSet<Access>());
         }
 
-        Set<Access> criticalSectionsForTarget = criticalSectionsPerTarget.get(target);
+        Set<Access> criticalSectionsForTarget = criticalSectionsPerTarget.get(objectUnderLock);
         criticalSectionsForTarget.add(access);
     }
 
@@ -48,12 +48,12 @@ public class AccessReport {
         return criticalSectionsPerAccessor.get(accessor);
     }
 
-    public Set<Access> retrieveCriticalSectionsFor(Target lock) {
+    public Set<Access> retrieveCriticalSectionsFor(ObjectUnderLock lock) {
         return criticalSectionsPerTarget.get(lock);
     }
 
 
-    public int countDifferentAccessorsFor(Target lock) {
+    public int countDifferentAccessorsFor(ObjectUnderLock lock) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
         Set<Accessor> accessors = new HashSet<>();
         for (Access access : accesses) {
@@ -64,7 +64,7 @@ public class AccessReport {
     }
 
 
-    public Set<Access> retrieveFrequentAccesses(Target lock, int delta, TimeUnit unit) {
+    public Set<Access> retrieveFrequentAccesses(ObjectUnderLock lock, int delta, TimeUnit unit) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
 
         if (accesses.size() > 1) {
@@ -94,7 +94,7 @@ public class AccessReport {
     }
 
 
-    public Set<Access> retrieveContendedAccesses(Target lock, int delta, TimeUnit unit) {
+    public Set<Access> retrieveContendedAccesses(ObjectUnderLock lock, int delta, TimeUnit unit) {
         Set<Access> frequentAccesses = retrieveFrequentAccesses(lock, delta, unit);
 
         if (frequentAccesses.size() > 1) {
@@ -123,10 +123,10 @@ public class AccessReport {
     }
 
 
-    public Map<Target, Set<Access>> retrieveAllContendedAccesses(int delta, TimeUnit unit) {
-        final Map<Target, Set<Access>> contendedAccessesPerLock = new HashMap<>();
+    public Map<ObjectUnderLock, Set<Access>> retrieveAllContendedAccesses(int delta, TimeUnit unit) {
+        final Map<ObjectUnderLock, Set<Access>> contendedAccessesPerLock = new HashMap<>();
 
-        for (Target lock : criticalSectionsPerTarget.keySet()) {
+        for (ObjectUnderLock lock : criticalSectionsPerTarget.keySet()) {
             Set<Access> contendedAccesses = retrieveContendedAccesses(lock, delta, unit);
             if (contendedAccesses.size() > 0) {
                 contendedAccessesPerLock.put(lock, contendedAccesses);

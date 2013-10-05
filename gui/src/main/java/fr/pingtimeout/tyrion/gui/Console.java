@@ -41,12 +41,12 @@ public class Console {
     private static void printContendedAccesses(File file) {
         AccessReport accessReport = new LocksFileReader(file).buildAccessReport();
 
-        Map<Target, Set<Access>> contendedAccesses = accessReport.retrieveAllContendedAccesses(1, TimeUnit.MILLISECONDS);
-        for (Map.Entry<Target, Set<Access>> targetContentedAccesses : contendedAccesses.entrySet()) {
+        Map<ObjectUnderLock, Set<Access>> contendedAccesses = accessReport.retrieveAllContendedAccesses(1, TimeUnit.MILLISECONDS);
+        for (Map.Entry<ObjectUnderLock, Set<Access>> targetContentedAccesses : contendedAccesses.entrySet()) {
             StringBuilder sb = new StringBuilder();
 
-            Target target = targetContentedAccesses.getKey();
-            sb.append("Contented accesses on ").append(target).append(" by ");
+            ObjectUnderLock objectUnderLock = targetContentedAccesses.getKey();
+            sb.append("Contented accesses on ").append(objectUnderLock).append(" by ");
 
             Set<Access> accesses = targetContentedAccesses.getValue();
             Set<Accessor> accessors = extractAccessorsFrom(accesses);

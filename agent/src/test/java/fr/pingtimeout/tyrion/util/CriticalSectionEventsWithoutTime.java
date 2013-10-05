@@ -20,7 +20,7 @@ package fr.pingtimeout.tyrion.util;
 
 import fr.pingtimeout.tyrion.model.Accessor;
 import fr.pingtimeout.tyrion.model.CriticalSectionEvent;
-import fr.pingtimeout.tyrion.model.Target;
+import fr.pingtimeout.tyrion.model.ObjectUnderLock;
 
 import java.util.Comparator;
 
@@ -30,12 +30,12 @@ public class CriticalSectionEventsWithoutTime implements Comparator<CriticalSect
         Accessor e1Accessor = e1.getAccessor();
         Accessor e2Accessor = e2.getAccessor();
 
-        Target e1Target = e1.getTarget();
-        Target e2Target = e2.getTarget();
+        ObjectUnderLock e1ObjectUnderLock = e1.getObjectUnderLock();
+        ObjectUnderLock e2ObjectUnderLock = e2.getObjectUnderLock();
 
         if (e1.getClass().equals(e2.getClass())
                 && e1Accessor.equals(e2Accessor)
-                && e1Target.equals(e2Target))
+                && e1ObjectUnderLock.equals(e2ObjectUnderLock))
             return 0;
         return -1;
     }
