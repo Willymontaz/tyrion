@@ -18,21 +18,104 @@
 
 package fr.pingtimeout.tyrion.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.pingtimeout.tyrion.util.HashCodeSource;
+import fr.pingtimeout.tyrion.util.TimeSource;
 import org.junit.Test;
 
+import static java.lang.Thread.currentThread;
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class SerializationTest {
+
     @Test
-    public void should_produce_a_valid_format() throws Exception {
+    public void should_produce_entering_events_in_a_valid_format() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
+        CriticalSectionEvent.timeSource = new ConstantTimeSource(42);
+        ObjectUnderLock.hashCodeSource = new ConstantHashCodeSource(1337);
 
         // When
-        CriticalSectionEntering enteringEvt = new CriticalSectionEntering(Thread.currentThread(), new Object());
-        String serializedEntry = jsonMapper.writeValueAsString(enteringEvt);
+        Object target = new Object();
+        String entering = jsonMapper.writeValueAsString(new CriticalSectionEntering(currentThread(), target));
 
         // Then
-        System.out.println(serializedEntry);
+        assertThat(entering).isEqualTo(
+                "{'entering':{'timestamp':42,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1337,'className':'java.lang.Object'}}}"
+                        .replace('\'', '"')
+        );
+    }
+
+
+    @Test
+    public void should_produce_entered_events_in_a_valid_format() throws Exception {
+        // Given
+        ObjectMapper jsonMapper = new ObjectMapper();
+        CriticalSectionEvent.timeSource = new ConstantTimeSource(43);
+        ObjectUnderLock.hashCodeSource = new ConstantHashCodeSource(1338);
+
+        // When
+        Object target = new Object();
+        String entered = jsonMapper.writeValueAsString(new CriticalSectionEntered(currentThread(), target));
+
+        // Then
+        assertThat(entered).isEqualTo(
+                "{'enter':{'timestamp':43,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1338,'className':'java.lang.Object'}}}"
+                        .replace('\'', '"')
+        );
+    }
+
+
+    @Test
+    public void should_produce_exit_events_in_a_valid_format() throws Exception {
+        // Given
+        ObjectMapper jsonMapper = new ObjectMapper();
+        CriticalSectionEvent.timeSource = new ConstantTimeSource(44);
+        ObjectUnderLock.hashCodeSource = new ConstantHashCodeSource(1339);
+
+        // When
+        Object target = new Object();
+        String exit = jsonMapper.writeValueAsString(new CriticalSectionExit(currentThread(), target));
+
+        // Then
+        assertThat(exit).isEqualTo(
+                "{'exit':{'timestamp':44,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1339,'className':'java.lang.Object'}}}"
+                        .replace('\'', '"')
+        );
+    }
+}
+
+
+class ConstantTimeSource extends TimeSource {
+
+    private final int millis;
+
+    ConstantTimeSource(int millis) {
+        this.millis = millis;
+    }
+
+    @Override
+    public long currentTimeMillis() {
+        return millis;
+    }
+
+    @Override
+    public long currentTimeNanos() {
+        throw new UnsupportedOperationException();
+    }
+}
+
+
+class ConstantHashCodeSource extends HashCodeSource {
+
+    private int hashcode;
+
+    ConstantHashCodeSource(int hashcode) {
+        this.hashcode = hashcode;
+    }
+
+    @Override
+    public long hashCodeOf(Object o) {
+        return hashcode;
     }
 }

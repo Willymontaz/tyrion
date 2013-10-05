@@ -2,8 +2,11 @@ package fr.pingtimeout.tyrion.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fr.pingtimeout.tyrion.util.HashCodeSource;
 
 public class ObjectUnderLock {
+
+    static HashCodeSource hashCodeSource = new HashCodeSource();
 
     private final String className;
 
@@ -12,7 +15,7 @@ public class ObjectUnderLock {
 
     public ObjectUnderLock(Object target) {
         this.className = target.getClass().getName();
-        this.hashcode = System.identityHashCode(target);
+        this.hashcode = hashCodeSource.hashCodeOf(target);
     }
 
 

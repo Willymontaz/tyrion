@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import fr.pingtimeout.tyrion.util.HashCodeSource;
+import fr.pingtimeout.tyrion.util.TimeSource;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
@@ -12,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = CriticalSectionExit.class, name = "exit")
 })
 public abstract class CriticalSectionEvent implements Comparable<CriticalSectionEvent> {
+
+    static TimeSource timeSource = new TimeSource();
 
     private final long timestamp;
 
@@ -22,7 +26,7 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
 
 
     public CriticalSectionEvent(Thread accessingThread, Object objectUnderLock) {
-        this.timestamp = System.currentTimeMillis();
+        this.timestamp = timeSource.currentTimeMillis();
         this.accessor = new Accessor(accessingThread);
         this.objectUnderLock = new ObjectUnderLock(objectUnderLock);
     }
