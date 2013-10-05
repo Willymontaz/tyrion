@@ -84,6 +84,20 @@ public class LockInterceptor implements LockInterceptorMXBean {
         }
     }
 
+    // Note : this method is called dynamically
+    public void enteredCriticalSection(Class<?> lock) {
+        if (enabled.get() && shouldIncludeThread()) {
+            eventsHolder.recordNewEntry(Thread.currentThread(), lock);
+        }
+    }
+
+    // Note : this method is called dynamically
+    public void leavingCriticalSection(Class<?> lock) {
+        if (enabled.get() && shouldIncludeThread()) {
+            eventsHolder.recordNewExit(Thread.currentThread(), lock);
+        }
+    }
+
     private boolean shouldIncludeThread() {
         String currentThreadName = Thread.currentThread().getName();
 

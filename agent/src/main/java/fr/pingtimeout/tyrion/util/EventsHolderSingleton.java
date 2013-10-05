@@ -23,6 +23,16 @@ public enum EventsHolderSingleton implements EventsHolder {
     }
 
     @Override
+    public void recordNewEntry(Thread accessor, Class<?> classUnderLock) {
+        add(accessor, new CriticalSectionEntered(accessor, classUnderLock));
+    }
+
+    @Override
+    public void recordNewExit(Thread accessor, Class<?> classUnderLock) {
+        add(accessor, new CriticalSectionExit(accessor, classUnderLock));
+    }
+
+    @Override
     public void recordNewEntry(Thread accessor, Object objectUnderLock) {
         add(accessor, new CriticalSectionEntered(accessor, objectUnderLock));
     }
