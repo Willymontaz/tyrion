@@ -20,6 +20,7 @@ package fr.pingtimeout.tyrion.transformation;
 
 import fr.pingtimeout.tyrion.agent.StaticAccessor;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
@@ -32,18 +33,29 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     private final String methodName;
     private final String className;
 
+    private final Label tryStart;
+    private final Label tryEnd;
+    private final Label finallyBlock;
+
 
     protected SynchronizedMethodWrapper(int api, MethodVisitor mv, int access, String name, String desc, String className) {
         super(Opcodes.ASM4, mv, access, name, desc);
 
         this.methodName = name;
         this.className = className.replaceAll("/", ".");
+
+        this.tryStart = new Label();
+        this.tryEnd = new Label();
+        this.finallyBlock = new Label();
     }
 
 
     @Override
     protected void onMethodEnter() {
         SimpleLogger.debug("Entering synchronized method %s", methodName);
+
+        mv.visitTryCatchBlock(tryStart, tryEnd, finallyBlock, null);
+        mv.visitLabel(tryStart);
 
         if (isStatic(methodAccess)) {
             putClassOnTheStack();
@@ -56,8 +68,32 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
         super.onMethodEnter();
     }
 
-    @Override
+
     protected void onMethodExit(int opcode) {
+        mv.visitLabel(tryEnd);
+        mv.visitLabel(finallyBlock);
+
+        if (isStatic(methodAccess)) {
+            putClassOnTheStack();
+            recordExitOnClass();
+        } else {
+            putThisOnTheStack();
+            recordExitOnObject();
+        }
+
+//        if (opcode != ATHROW) {
+//            if (isStatic(methodAccess)) {
+//                putClassOnTheStack();
+//                recordExitOnClass();
+//            } else {
+//                putThisOnTheStack();
+//                recordExitOnObject();
+//            }
+//        }
+    }
+
+    //    @Override
+    protected void onMethodExit_old(int opcode) {
         SimpleLogger.debug("Leaving synchronized method %s", methodName);
 
         if (isStatic(methodAccess)) {
@@ -98,7 +134,6 @@ class SynchronizedMethodWrapper extends AdviceAdapter {
     private void putThisOnTheStack() {
         mv.visitVarInsn(ALOAD, 0);
     }
-
 
 
     private void recordExitOnObject() {

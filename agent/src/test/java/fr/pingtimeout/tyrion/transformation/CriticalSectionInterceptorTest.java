@@ -18,7 +18,6 @@
 
 package fr.pingtimeout.tyrion.transformation;
 
-import fr.pingtimeout.tyrion.agent.TestClassWithSynchronizedSections;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -54,8 +53,11 @@ public class CriticalSectionInterceptorTest {
 
     private String extractTransformedBytecodesOf(Class<?> classUnderTest) throws IOException {
         String classFilePath = classUnderTest.getName().replace('.', '/') + ".class";
-        InputStream inputStream = classUnderTest.getClassLoader().getResourceAsStream(classFilePath);
-        byte[] originalBytecodes = IOUtils.toByteArray(inputStream);
+
+        byte[] originalBytecodes;
+        try (InputStream inputStream = classUnderTest.getClassLoader().getResourceAsStream(classFilePath)) {
+            originalBytecodes = IOUtils.toByteArray(inputStream);
+        }
 
         StringWriter classBytecodes = new StringWriter();
         CriticalSectionsInterceptor criticalSectionsInterceptor = new CriticalSectionsInterceptor(new PrintWriter(classBytecodes));

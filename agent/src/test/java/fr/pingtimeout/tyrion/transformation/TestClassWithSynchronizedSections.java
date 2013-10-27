@@ -16,7 +16,7 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion.agent;
+package fr.pingtimeout.tyrion.transformation;
 
 public class TestClassWithSynchronizedSections {
     public synchronized int someSynchronizedMethod() {

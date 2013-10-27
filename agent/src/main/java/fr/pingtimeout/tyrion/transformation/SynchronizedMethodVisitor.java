@@ -40,14 +40,19 @@ class SynchronizedMethodVisitor extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        final MethodVisitor nextVisitor = super.visitMethod(access, name, desc, signature, exceptions);
+        final MethodVisitor result;
 
         if (isSynchronized(access)) {
             SimpleLogger.debug("Found synchronized method : %s %s::%s %s", accessToString(access), className, name, desc);
-            return new SynchronizedMethodWrapper(api, nextVisitor, access, name, desc, className);
+
+            int accessWithoutSynchronized = access & (~Opcodes.ACC_SYNCHRONIZED);
+            MethodVisitor previousVisitor = super.visitMethod(accessWithoutSynchronized, name, desc, signature, exceptions);
+            result = new SynchronizedMethodWrapper(api, previousVisitor, access, name, desc, className);
+        } else {
+            result = super.visitMethod(access, name, desc, signature, exceptions);
         }
 
-        return nextVisitor;
+        return result;
     }
 
 

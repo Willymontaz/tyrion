@@ -61,7 +61,7 @@ public class CriticalSectionsInterceptor implements ClassFileTransformer {
     }
 
 
-    public byte[] transform(String className, byte[] classfileBuffer) {
+    byte[] transform(String className, byte[] classfileBuffer) {
         ClassReader reader = new ClassReader(classfileBuffer);
         ClassNode classNode = new ClassNode();
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
