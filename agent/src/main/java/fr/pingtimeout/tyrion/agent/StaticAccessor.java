@@ -9,7 +9,7 @@ public enum StaticAccessor {
     AFTER_MONITORENTER_ON_CLASS("enteredCriticalSection", "(Ljava/lang/Class;)V"),
     BEFORE_MONITOREXIT_ON_CLASS("leavingCriticalSection", "(Ljava/lang/Class;)V"),
 
-    GET_CLASS_BY_NAME("classForName", "(Ljava/lang/String;)Ljava/lang/Class;")
+    RETRIEVE_CLASS_BY_NAME("classForName", "(Ljava/lang/String;)Ljava/lang/Class;")
     ;
 
 

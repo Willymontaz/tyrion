@@ -18,21 +18,24 @@
 
 package fr.pingtimeout.tyrion.transformation;
 
-import fr.pingtimeout.tyrion.util.SimpleLogger;
+import java.util.HashMap;
+import java.util.Map;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import fr.pingtimeout.tyrion.util.SimpleLogger;
 
-import java.util.HashMap;
-import java.util.Map;
-
-class SynchronizedMethodVisitor extends ClassVisitor {
+/**
+ * This class instruments synchronized methods by removing the {@code synchronized} keyword, replacing it by a
+ * synchronized block on the current lock ({@code this} for instance methods, the current class for static methods).
+ */
+class SynchronizedMethodTransformer extends ClassVisitor {
 
 
     private final String className;
 
 
-    public SynchronizedMethodVisitor(int api, ClassVisitor cv, String className) {
+    public SynchronizedMethodTransformer(int api, ClassVisitor cv, String className) {
         super(api, cv);
         this.className = className;
     }
@@ -47,7 +50,7 @@ class SynchronizedMethodVisitor extends ClassVisitor {
 
             int accessWithoutSynchronized = access & (~Opcodes.ACC_SYNCHRONIZED);
             MethodVisitor previousVisitor = super.visitMethod(accessWithoutSynchronized, name, desc, signature, exceptions);
-            result = new SynchronizedMethodWrapper(api, previousVisitor, access, name, desc, className);
+            result = new SynchronizedMethodProbesInjector(api, previousVisitor, access, name, desc, className);
         } else {
             result = super.visitMethod(access, name, desc, signature, exceptions);
         }

@@ -56,7 +56,7 @@ class SynchronizedBlockTransformer {
 
     private int interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
         int numberOfBlocksIntercepted = 0;
-        if (SynchronizedMethodVisitor.isSynchronized(methodNode.access)) {
+        if (SynchronizedMethodTransformer.isSynchronized(methodNode.access)) {
             SimpleLogger.debug("%s::%s is synchronized, nothing to do here", classNode.name, methodNode.name);
         } else {
             SimpleLogger.debug("Intercepting all synchronized blocks of %s::%s", classNode.name, methodNode.name);

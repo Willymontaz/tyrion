@@ -18,30 +18,50 @@ public class fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSecti
 
   // access flags 0x1
   public someSynchronizedMethod()I
-    ALOAD 0
-    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.enteredCriticalSection (Ljava/lang/Object;)V
+    TRYCATCHBLOCK L0 L1 L2 null
    L0
-    LINENUMBER 23 L0
-    BIPUSH 42
     ALOAD 0
-    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.leavingCriticalSection (Ljava/lang/Object;)V
-    IRETURN
+    DUP
+    DUP
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.enteringCriticalSection (Ljava/lang/Object;)V
+    MONITORENTER
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.enteredCriticalSection (Ljava/lang/Object;)V
+   L3
+    LINENUMBER 23 L3
+    BIPUSH 42
    L1
-    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L0 L1 0
+   L2
+    ALOAD 0
+    DUP
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.leavingCriticalSection (Ljava/lang/Object;)V
+    MONITOREXIT
+    IRETURN
+   L4
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L3 L4 0
     MAXSTACK = 1
     MAXLOCALS = 1
 
   // access flags 0x9
   public static someStaticSynchronizedMethod()I
-    LDC "fr.pingtimeout.tyrion.transformation.TestClassWithSynchronizedSections"
-    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.classForName (Ljava/lang/String;)Ljava/lang/Class;
-    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.enteredCriticalSection (Ljava/lang/Class;)V
+    TRYCATCHBLOCK L0 L1 L2 null
    L0
-    LINENUMBER 27 L0
-    SIPUSH 1337
     LDC "fr.pingtimeout.tyrion.transformation.TestClassWithSynchronizedSections"
     INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.classForName (Ljava/lang/String;)Ljava/lang/Class;
+    DUP
+    DUP
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.enteringCriticalSection (Ljava/lang/Class;)V
+    MONITORENTER
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.enteredCriticalSection (Ljava/lang/Class;)V
+   L3
+    LINENUMBER 27 L3
+    SIPUSH 1337
+   L1
+   L2
+    LDC "fr.pingtimeout.tyrion.transformation.TestClassWithSynchronizedSections"
+    INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.classForName (Ljava/lang/String;)Ljava/lang/Class;
+    DUP
     INVOKESTATIC fr/pingtimeout/tyrion/agent/StaticAccessor.leavingCriticalSection (Ljava/lang/Class;)V
+    MONITOREXIT
     IRETURN
     MAXSTACK = 1
     MAXLOCALS = 0

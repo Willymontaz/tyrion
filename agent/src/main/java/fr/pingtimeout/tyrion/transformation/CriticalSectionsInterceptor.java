@@ -70,12 +70,12 @@ public class CriticalSectionsInterceptor implements ClassFileTransformer {
         final ClassVisitor syncMethodsVisitor;
         if (traceBytecodeWriter != null) {
             ClassVisitor traceClassVisitor = new TraceClassVisitor(writer, traceBytecodeWriter);
-            syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, traceClassVisitor, className);
+            syncMethodsVisitor = new SynchronizedMethodTransformer(Opcodes.ASM4, traceClassVisitor, className);
         } else {
-            syncMethodsVisitor = new SynchronizedMethodVisitor(Opcodes.ASM4, writer, className);
+            syncMethodsVisitor = new SynchronizedMethodTransformer(Opcodes.ASM4, writer, className);
         }
 
-        // Reader -> ClassNode -> SynchronizedMethodVisitor -> (TraceClassVisitor ->) Writer
+        // Reader -> ClassNode -> SynchronizedMethodTransformer -> (TraceClassVisitor ->) Writer
         reader.accept(classNode, 0);
         synchronizedBlockTransformer.interceptAllSynchronizedBlocks();
         classNode.accept(syncMethodsVisitor);
