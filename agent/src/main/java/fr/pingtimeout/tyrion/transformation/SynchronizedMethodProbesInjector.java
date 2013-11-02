@@ -32,9 +32,8 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
     private final String methodName;
     private final String className;
 
-    private final Label tryStart;
-    private final Label tryEnd;
-    private final Label finallyBlock;
+    private final Label startFinally;
+    private final Label endFinally;
 
 
     protected SynchronizedMethodProbesInjector(int api, MethodVisitor mv, int access, String name, String desc, String className) {
@@ -43,9 +42,8 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         this.methodName = name;
         this.className = className.replaceAll("/", ".");
 
-        this.tryStart = new Label();
-        this.tryEnd = new Label();
-        this.finallyBlock = new Label();
+        this.startFinally = new Label();
+        this.endFinally = new Label();
     }
 
 
@@ -53,76 +51,98 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
     protected void onMethodEnter() {
         SimpleLogger.debug("Entering synchronized method %s", methodName);
 
-        mv.visitTryCatchBlock(tryStart, tryEnd, finallyBlock, null);
-        mv.visitLabel(tryStart);
-
-        if (isStatic(methodAccess)) {
-            mv.visitLdcInsn(className);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.RETRIEVE_CLASS_BY_NAME.getMethodName(),
-                    StaticAccessor.RETRIEVE_CLASS_BY_NAME.getSignature());
-            mv.visitInsn(DUP);
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.BEFORE_MONITORENTER_ON_CLASS.getMethodName(),
-                    StaticAccessor.BEFORE_MONITORENTER_ON_CLASS.getSignature());
-            mv.visitInsn(MONITORENTER);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.AFTER_MONITORENTER_ON_CLASS.getMethodName(),
-                    StaticAccessor.AFTER_MONITORENTER_ON_CLASS.getSignature());
-        } else {
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitInsn(DUP);
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getMethodName(),
-                    StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getSignature());
-            mv.visitInsn(MONITORENTER);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getMethodName(),
-                    StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getSignature());
-        }
-
-        super.onMethodEnter();
+        pushTargetOnStack();
+        mv.visitInsn(DUP);
+        mv.visitInsn(DUP);
+        popTargetAndRecordTryEnter();
+        popTargetAndEnterSynchronizedBlock();
+        popTargetAndRecordEnter();
     }
-
 
     @Override
     protected void onMethodExit(int opcode) {
-        SimpleLogger.debug("Leaving synchronized method %s", methodName);
-
-        mv.visitLabel(tryEnd);
-        mv.visitLabel(finallyBlock);
-
-        if (isStatic(methodAccess)) {
-            mv.visitLdcInsn(className);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.RETRIEVE_CLASS_BY_NAME.getMethodName(),
-                    StaticAccessor.RETRIEVE_CLASS_BY_NAME.getSignature());
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.BEFORE_MONITOREXIT_ON_CLASS.getMethodName(),
-                    StaticAccessor.BEFORE_MONITOREXIT_ON_CLASS.getSignature());
-            mv.visitInsn(MONITOREXIT);
-        } else {
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitInsn(DUP);
-            mv.visitMethodInsn(INVOKESTATIC,
-                    StaticAccessor.CLASS_FQN,
-                    StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getMethodName(),
-                    StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getSignature());
-            mv.visitInsn(MONITOREXIT);
+        if (opcode != ATHROW) {
+            onFinally(opcode);
         }
+    }
 
-        super.onMethodExit(opcode);
+    @Override
+    public void visitMaxs(int maxStack, int maxLocals) {
+        mv.visitTryCatchBlock(this.startFinally, this.endFinally, this.endFinally, null);
+        mv.visitLabel(this.endFinally);
+
+        onFinally(ATHROW);
+
+        super.visitMaxs(maxStack, maxLocals);
     }
 
 
+    private void onFinally(int opcode) {
+        SimpleLogger.debug("Leaving synchronized method %s", methodName);
+
+        pushTargetOnStack();
+        mv.visitInsn(DUP);
+        popTargetAndRecordExit();
+        popTargetAndExitSynchronizedBlock();
+
+        mv.visitInsn(opcode);
+    }
+
+
+    private void pushTargetOnStack() {
+        if (isStatic(methodAccess)) {
+            pushCurrentClassOnStack();
+        } else {
+            pushThisOnStack();
+        }
+    }
+
+
+    private void pushCurrentClassOnStack() {
+        mv.visitLdcInsn(className);
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.RETRIEVE_CLASS_BY_NAME.getMethodName(),
+                StaticAccessor.RETRIEVE_CLASS_BY_NAME.getSignature());
+    }
+
+
+    private void pushThisOnStack() {
+        mv.visitVarInsn(ALOAD, 0);
+    }
+
+
+    private void popTargetAndRecordTryEnter() {
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getMethodName(),
+                StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getSignature());
+    }
+
+
+    private void popTargetAndEnterSynchronizedBlock() {
+        mv.visitInsn(MONITORENTER);
+        mv.visitLabel(startFinally);
+    }
+
+
+    private void popTargetAndRecordEnter() {
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getMethodName(),
+                StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getSignature());
+    }
+
+
+    private void popTargetAndExitSynchronizedBlock() {
+        mv.visitInsn(MONITOREXIT);
+    }
+
+
+    private void popTargetAndRecordExit() {
+        mv.visitMethodInsn(INVOKESTATIC,
+                StaticAccessor.CLASS_FQN,
+                StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getMethodName(),
+                StaticAccessor.BEFORE_MONITOREXIT_ON_OBJECT.getSignature());
+    }
 }

@@ -23,6 +23,7 @@ import java.util.Map;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.util.CheckClassAdapter;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
 
 /**
@@ -30,6 +31,7 @@ import fr.pingtimeout.tyrion.util.SimpleLogger;
  * synchronized block on the current lock ({@code this} for instance methods, the current class for static methods).
  */
 class SynchronizedMethodTransformer extends ClassVisitor {
+//class SynchronizedMethodTransformer extends CheckClassAdapter {
 
 
     private final String className;
@@ -37,6 +39,7 @@ class SynchronizedMethodTransformer extends ClassVisitor {
 
     public SynchronizedMethodTransformer(int api, ClassVisitor cv, String className) {
         super(api, cv);
+//        super(cv);
         this.className = className;
     }
 
