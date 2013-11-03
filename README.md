@@ -77,7 +77,7 @@ Static synchronized methods are converted the same way.
 After instrumentation, the method pseudocode will be like the following :
 
     class Baz {
-      public void foo() {
+      public static void foo() {
         // Record time before trying to enter the synchronized block on class Baz
         synchronized(Baz.class) {
           // Record time once in the synchronized block on class Baz
