@@ -32,7 +32,7 @@ public class SerializationTest {
     public void should_produce_entering_events_in_a_valid_format() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
-        CriticalSectionEvent.timeSource = new ConstantTimeSource(42);
+        CriticalSectionEvent.timeSource = new ConstantTimeSource(42, 1);
         ObjectUnderLock.hashCodeSource = new ConstantHashCodeSource(1337);
 
         // When
@@ -41,7 +41,7 @@ public class SerializationTest {
 
         // Then
         assertThat(entering).isEqualTo(
-                "{'entering':{'timestamp':42,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1337,'className':'java.lang.Object'}}}"
+                "{'entering':{'millis':42,'nanos':1,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1337,'className':'java.lang.Object'}}}"
                         .replace('\'', '"')
         );
     }
@@ -51,7 +51,7 @@ public class SerializationTest {
     public void should_produce_entered_events_in_a_valid_format() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
-        CriticalSectionEvent.timeSource = new ConstantTimeSource(43);
+        CriticalSectionEvent.timeSource = new ConstantTimeSource(43, 2);
         ObjectUnderLock.hashCodeSource = new ConstantHashCodeSource(1338);
 
         // When
@@ -60,7 +60,7 @@ public class SerializationTest {
 
         // Then
         assertThat(entered).isEqualTo(
-                "{'enter':{'timestamp':43,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1338,'className':'java.lang.Object'}}}"
+                "{'enter':{'millis':43,'nanos':2,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1338,'className':'java.lang.Object'}}}"
                         .replace('\'', '"')
         );
     }
@@ -70,7 +70,7 @@ public class SerializationTest {
     public void should_produce_exit_events_in_a_valid_format() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
-        CriticalSectionEvent.timeSource = new ConstantTimeSource(44);
+        CriticalSectionEvent.timeSource = new ConstantTimeSource(44, 3);
         ObjectUnderLock.hashCodeSource = new ConstantHashCodeSource(1339);
 
         // When
@@ -79,7 +79,7 @@ public class SerializationTest {
 
         // Then
         assertThat(exit).isEqualTo(
-                "{'exit':{'timestamp':44,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1339,'className':'java.lang.Object'}}}"
+                "{'exit':{'millis':44,'nanos':3,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1339,'className':'java.lang.Object'}}}"
                         .replace('\'', '"')
         );
     }
@@ -89,9 +89,11 @@ public class SerializationTest {
 class ConstantTimeSource extends TimeSource {
 
     private final int millis;
+    private final int nanos;
 
-    ConstantTimeSource(int millis) {
+    ConstantTimeSource(int millis, int nanos) {
         this.millis = millis;
+        this.nanos = nanos;
     }
 
     @Override
@@ -101,7 +103,7 @@ class ConstantTimeSource extends TimeSource {
 
     @Override
     public long currentTimeNanos() {
-        throw new UnsupportedOperationException();
+        return nanos;
     }
 }
 

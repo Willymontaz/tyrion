@@ -29,12 +29,13 @@ public class CriticalSectionEntering extends CriticalSectionEvent {
     }
 
 
-    // Constructor and getters required by Jackson unmashalling process
+    // Constructor required by Jackson unmashalling process
     @JsonCreator
     protected CriticalSectionEntering(
-            @JsonProperty("timestamp") long timestamp,
+            @JsonProperty("millis") long millis,
+            @JsonProperty("nanos") long nanos,
             @JsonProperty("accessor") Accessor accessor,
             @JsonProperty("target") ObjectUnderLock objectUnderLock) {
-        super(timestamp, accessor, objectUnderLock);
+        super(millis, nanos, accessor, objectUnderLock);
     }
 }
