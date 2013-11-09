@@ -20,6 +20,12 @@ package fr.pingtimeout.tyrion.transformation;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import static org.apache.commons.io.IOUtils.readLines;
+import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,33 +44,61 @@ public class CriticalSectionInterceptorTest {
     public void should_transform_all_synchronized_sections() throws Exception {
         // Given
         Class<?> classUnderTest = TestClassWithSynchronizedSections.class;
-        String expectedBytecodes = join(
+        String expectedOriginalBytecodes = join(
+                readLines(CriticalSectionInterceptorTest.class.getResourceAsStream("originalBytecodes.txt"))
+                , "\n");
+        String expectedTransformedBytecodes = join(
                 readLines(CriticalSectionInterceptorTest.class.getResourceAsStream("expectedBytecodes.txt"))
                 , "\n");
 
 
         // When
-        String testClassBytecodes = extractTransformedBytecodesOf(classUnderTest);
+        String originalBytecodes = extractOriginalBytecodesOf(classUnderTest);
+        String transformedBytecodes = extractTransformedBytecodesOf(classUnderTest);
 
 
         // Then
-        assertThat(testClassBytecodes).isEqualTo(expectedBytecodes);
+        assertThat(originalBytecodes).isEqualTo(expectedOriginalBytecodes);
+        assertThat(transformedBytecodes).isEqualTo(expectedTransformedBytecodes);
+
+        /**
+         * The test of the origial bytecodes is there for :
+         * - Making sure that the original class file is not modified
+         * - Otherwise, locate if a problem is in the original class or the transformer
+         * - Have a precise idea of the original bytecodes
+         * - Be able to compare the original bytecodes and the transformed bytecodes
+         */
     }
 
+    private String extractOriginalBytecodesOf(Class<?> classUnderTest) throws IOException {
+        byte[] bytecodes = retrieveClassBytecodes(classUnderTest);
+        return convertBytecodesToString(bytecodes);
+    }
 
-    private String extractTransformedBytecodesOf(Class<?> classUnderTest) throws IOException {
+    private String convertBytecodesToString(byte[] originalBytecodes) {
+        StringWriter classBytecodes = new StringWriter();
+        ClassReader reader = new ClassReader(originalBytecodes);
+        ClassVisitor syncMethodsVisitor = new TraceClassVisitor(new ClassWriter(0), new PrintWriter(classBytecodes));
+        reader.accept(syncMethodsVisitor, 0);
+        return classBytecodes.toString();
+    }
+
+    private byte[] retrieveClassBytecodes(Class<?> classUnderTest) throws IOException {
         String classFilePath = classUnderTest.getName().replace('.', '/') + ".class";
 
         byte[] originalBytecodes;
         try (InputStream inputStream = classUnderTest.getClassLoader().getResourceAsStream(classFilePath)) {
             originalBytecodes = IOUtils.toByteArray(inputStream);
         }
+        return originalBytecodes;
+    }
 
-        StringWriter classBytecodes = new StringWriter();
-        CriticalSectionsInterceptor criticalSectionsInterceptor = new CriticalSectionsInterceptor(new PrintWriter(classBytecodes));
 
-        criticalSectionsInterceptor.transform(classUnderTest.getName(), originalBytecodes);
+    private String extractTransformedBytecodesOf(Class<?> classUnderTest) throws IOException {
+        byte[] transformedBytecodes = new CriticalSectionsInterceptor().transform(
+                classUnderTest.getName(),
+                retrieveClassBytecodes(classUnderTest));
 
-        return classBytecodes.toString();
+        return convertBytecodesToString(transformedBytecodes);
     }
 }

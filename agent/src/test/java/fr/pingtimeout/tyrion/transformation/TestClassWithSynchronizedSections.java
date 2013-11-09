@@ -19,17 +19,48 @@
 package fr.pingtimeout.tyrion.transformation;
 
 public class TestClassWithSynchronizedSections {
-    public synchronized int someSynchronizedMethod() {
-        return 42;
+    final Object lock = new Object();
+
+    static synchronized long staticMethodOne() {
+        return staticMethodTwo();
     }
 
-    public static synchronized int someStaticSynchronizedMethod() {
-        return 1337;
+    static synchronized long staticMethodTwo() {
+        return 1L;
     }
 
-    public int methodWithSynchronizedBlock() {
-        synchronized (this) {
-            return 0;
+    synchronized long instanceMethodOne() {
+        return instanceMethodTwo();
+    }
+
+    synchronized long instanceMethodTwo() {
+        return 2L;
+    }
+
+    long blockOne() {
+        synchronized (lock) {
+            return blockTwo();
         }
     }
+
+    long blockTwo() {
+        synchronized (lock) {
+            return 3L;
+        }
+    }
+
+    synchronized static long staticMethodWithException() {
+        throw new RuntimeException("From static method");
+    }
+
+    synchronized long instanceMethodWithException() {
+        throw new RuntimeException("From instance method");
+    }
+
+    long blockWithException() {
+        synchronized (lock) {
+            throw new RuntimeException("From static block");
+        }
+    }
+
 }

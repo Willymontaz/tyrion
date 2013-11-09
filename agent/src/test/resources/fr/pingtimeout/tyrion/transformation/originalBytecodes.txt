@@ -1,0 +1,192 @@
+// class version 51.0 (51)
+// access flags 0x21
+public class fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections {
+
+  // compiled from: TestClassWithSynchronizedSections.java
+
+  // access flags 0x10
+  final Ljava/lang/Object; lock
+
+  // access flags 0x1
+  public <init>()V
+   L0
+    LINENUMBER 21 L0
+    ALOAD 0
+    INVOKESPECIAL java/lang/Object.<init> ()V
+   L1
+    LINENUMBER 22 L1
+    ALOAD 0
+    NEW java/lang/Object
+    DUP
+    INVOKESPECIAL java/lang/Object.<init> ()V
+    PUTFIELD fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.lock : Ljava/lang/Object;
+    RETURN
+   L2
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L0 L2 0
+    MAXSTACK = 3
+    MAXLOCALS = 1
+
+  // access flags 0x28
+  static synchronized staticMethodOne()J
+   L0
+    LINENUMBER 25 L0
+    INVOKESTATIC fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.staticMethodTwo ()J
+    LRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 0
+
+  // access flags 0x28
+  static synchronized staticMethodTwo()J
+   L0
+    LINENUMBER 29 L0
+    LCONST_1
+    LRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 0
+
+  // access flags 0x20
+  synchronized instanceMethodOne()J
+   L0
+    LINENUMBER 33 L0
+    ALOAD 0
+    INVOKEVIRTUAL fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.instanceMethodTwo ()J
+    LRETURN
+   L1
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L0 L1 0
+    MAXSTACK = 2
+    MAXLOCALS = 1
+
+  // access flags 0x20
+  synchronized instanceMethodTwo()J
+   L0
+    LINENUMBER 37 L0
+    LDC 2
+    LRETURN
+   L1
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L0 L1 0
+    MAXSTACK = 2
+    MAXLOCALS = 1
+
+  // access flags 0x0
+  blockOne()J
+    TRYCATCHBLOCK L0 L1 L2 null
+    TRYCATCHBLOCK L2 L3 L2 null
+   L4
+    LINENUMBER 41 L4
+    ALOAD 0
+    GETFIELD fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.lock : Ljava/lang/Object;
+    DUP
+    ASTORE 1
+    MONITORENTER
+   L0
+    LINENUMBER 42 L0
+    ALOAD 0
+    INVOKEVIRTUAL fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.blockTwo ()J
+    ALOAD 1
+    MONITOREXIT
+   L1
+    LRETURN
+   L2
+    LINENUMBER 43 L2
+   FRAME FULL [fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections java/lang/Object] [java/lang/Throwable]
+    ASTORE 2
+    ALOAD 1
+    MONITOREXIT
+   L3
+    ALOAD 2
+    ATHROW
+   L5
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L4 L5 0
+    MAXSTACK = 3
+    MAXLOCALS = 3
+
+  // access flags 0x0
+  blockTwo()J
+    TRYCATCHBLOCK L0 L1 L2 null
+    TRYCATCHBLOCK L2 L3 L2 null
+   L4
+    LINENUMBER 47 L4
+    ALOAD 0
+    GETFIELD fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.lock : Ljava/lang/Object;
+    DUP
+    ASTORE 1
+    MONITORENTER
+   L0
+    LINENUMBER 48 L0
+    LDC 3
+    ALOAD 1
+    MONITOREXIT
+   L1
+    LRETURN
+   L2
+    LINENUMBER 49 L2
+   FRAME FULL [fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections java/lang/Object] [java/lang/Throwable]
+    ASTORE 2
+    ALOAD 1
+    MONITOREXIT
+   L3
+    ALOAD 2
+    ATHROW
+   L5
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L4 L5 0
+    MAXSTACK = 3
+    MAXLOCALS = 3
+
+  // access flags 0x28
+  static synchronized staticMethodWithException()J
+   L0
+    LINENUMBER 53 L0
+    NEW java/lang/RuntimeException
+    DUP
+    LDC "From static method"
+    INVOKESPECIAL java/lang/RuntimeException.<init> (Ljava/lang/String;)V
+    ATHROW
+    MAXSTACK = 3
+    MAXLOCALS = 0
+
+  // access flags 0x20
+  synchronized instanceMethodWithException()J
+   L0
+    LINENUMBER 57 L0
+    NEW java/lang/RuntimeException
+    DUP
+    LDC "From instance method"
+    INVOKESPECIAL java/lang/RuntimeException.<init> (Ljava/lang/String;)V
+    ATHROW
+   L1
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L0 L1 0
+    MAXSTACK = 3
+    MAXLOCALS = 1
+
+  // access flags 0x0
+  blockWithException()J
+    TRYCATCHBLOCK L0 L1 L2 null
+   L3
+    LINENUMBER 61 L3
+    ALOAD 0
+    GETFIELD fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections.lock : Ljava/lang/Object;
+    DUP
+    ASTORE 1
+    MONITORENTER
+   L0
+    LINENUMBER 62 L0
+    NEW java/lang/RuntimeException
+    DUP
+    LDC "From static block"
+    INVOKESPECIAL java/lang/RuntimeException.<init> (Ljava/lang/String;)V
+    ATHROW
+   L2
+    LINENUMBER 63 L2
+   FRAME FULL [fr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections java/lang/Object] [java/lang/Throwable]
+    ASTORE 2
+    ALOAD 1
+    MONITOREXIT
+   L1
+    ALOAD 2
+    ATHROW
+   L4
+    LOCALVARIABLE this Lfr/pingtimeout/tyrion/transformation/TestClassWithSynchronizedSections; L3 L4 0
+    MAXSTACK = 3
+    MAXLOCALS = 3
+}
+

@@ -85,7 +85,9 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         popTargetAndRecordExit();
         popTargetAndExitSynchronizedBlock();
 
-        mv.visitInsn(opcode);
+//        if (opcode == ATHROW) {
+//            mv.visitInsn(opcode);
+//        }
     }
 
 
