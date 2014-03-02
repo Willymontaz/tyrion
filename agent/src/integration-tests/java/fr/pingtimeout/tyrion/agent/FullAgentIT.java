@@ -2,7 +2,7 @@ package fr.pingtimeout.tyrion.agent;
 
 import org.junit.Test;
 
-public class FullAgentTest {
+public class FullAgentIT {
     @Test(expected = NullPointerException.class)
     public void should_() {
         // Given
