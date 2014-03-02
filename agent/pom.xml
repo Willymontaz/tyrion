@@ -52,7 +52,7 @@
                                     <Agent-Class>fr.pingtimeout.tyrion.agent.LockProfilingAgent</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
-                                    <Boot-Class-Path>tyrion-${artifactId}-${project.version}-jar-with-dependencies.jar
+                                    <Boot-Class-Path>tyrion-${project.artifactId}-${project.version}-jar-with-dependencies.jar
                                     </Boot-Class-Path>
                                 </manifestEntries>
                             </archive>
@@ -76,7 +76,7 @@
                 </executions>
             </plugin>
         </plugins>
-        <finalName>tyrion-${artifactId}-${project.version}</finalName>
+        <finalName>tyrion-${project.artifactId}-${project.version}</finalName>
     </build>
 
     <dependencies>
