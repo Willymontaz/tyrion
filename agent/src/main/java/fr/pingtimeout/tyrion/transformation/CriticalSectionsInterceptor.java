@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Pierre Laporte
+ * Copyright (c) 2013-2014, Pierre Laporte
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER
  *

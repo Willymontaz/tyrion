@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Pierre Laporte
+ * Copyright (c) 2013-2014, Pierre Laporte
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER
  *
@@ -13,7 +13,7 @@
  * for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this work; if not, see <http;//www.gnu.org/licenses/>.
+ * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
 package fr.pingtimeout.tyrion.agent;
