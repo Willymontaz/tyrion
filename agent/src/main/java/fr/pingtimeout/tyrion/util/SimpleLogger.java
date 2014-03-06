@@ -22,7 +22,7 @@ import java.io.PrintStream;
 
 public class SimpleLogger {
 
-    static SimpleLogger log = new SimpleLogger(Level.INFO);
+    static SimpleLogger log = new SimpleLogger(Level.DEBUG);
 
     private final Level level;
     private final PrintStream out;

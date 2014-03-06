@@ -101,6 +101,8 @@ public class TestClassWithSynchronized {
             startSynchronizedBlocksWithException(countDownLatch);
             countDownLatch.await();
 
+            Thread.sleep(1100);
+
             String errorMessages = interceptedStdErrBuffer.toString();
             if (errorMessages.length() > 0) {
                 System.err.println("ERROR - the test generated data on stderr, this should not happen");

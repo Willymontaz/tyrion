@@ -82,8 +82,10 @@ public class ConfigurationTest {
 
 
     private void assertDefaultConfiguration(Configuration configuration) {
-        assertThat(configuration.outputFile().isDefaultValue());
-        assertThat(configuration.excludedThreads().isDefaultValue());
+        assertThat(configuration.outputFile().isDefaultValue()).isTrue();
+        assertThat(configuration.isEnabledAtStartup().isDefaultValue()).isTrue();
+        assertThat(configuration.isEnabledAtStartup().getValue()).isEqualTo("false");
+        assertThat(configuration.excludedThreads().isDefaultValue()).isTrue();
         assertThat(configuration.outputFile().getValues()).containsOnly("");
         assertThat(configuration.excludedThreads().getValues()).containsOnly("");
     }

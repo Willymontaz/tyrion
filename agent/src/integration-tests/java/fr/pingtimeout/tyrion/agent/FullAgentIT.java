@@ -30,13 +30,13 @@ public class FullAgentIT {
     @Test
     public void should_attach_to_java_application_and_profile_synchronized_locks() throws IOException {
         // Given
-        String runAgentOnTestClass = String.format("java -javaagent:%s=output-file=%s -cp %s %s%n",
+        // NOTE : if you run the test form an IDE, set the working directory to be the "agent" directory
+        String runAgentOnTestClass = String.format("java -javaagent:%s=output-file=%s;enabled-at-startup=true -cp %s %s%n",
                 new File("target/tyrion-agent-jar-with-dependencies.jar").getAbsolutePath(),
                 new File("target/" + getClass().getSimpleName() + ".locks.txt").getAbsolutePath(),
                 new File("target/test-classes/").getAbsolutePath(),
                 TestClassWithSynchronized.class.getName()
         );
-
 
         // When
         Process javaProcess = Runtime.getRuntime().exec(runAgentOnTestClass);
