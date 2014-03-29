@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Pierre Laporte
+ * Copyright (c) 2013-2014, Pierre Laporte
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER
  *
@@ -61,6 +61,7 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
 
     @Override
     protected void onMethodExit(int opcode) {
+        // Let visitMaxs handle exceptions
         if (opcode != ATHROW) {
             onFinally(opcode);
         }
@@ -71,6 +72,7 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         mv.visitTryCatchBlock(this.startFinally, this.endFinally, this.endFinally, null);
         mv.visitLabel(this.endFinally);
 
+        // Program execution may reach visitMaxs in case of exception
         onFinally(ATHROW);
 
         super.visitMaxs(maxStack, maxLocals);
@@ -85,7 +87,9 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         popTargetAndRecordExit();
         popTargetAndExitSynchronizedBlock();
 
-        mv.visitInsn(opcode);
+        if (opcode == ATHROW) {
+            mv.visitInsn(opcode);
+        }
     }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Pierre Laporte
+ * Copyright (c) 2013-2014, Pierre Laporte
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER
  *
@@ -16,6 +16,8 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.concurrent.CountDownLatch;
 
 public class SimpleTest {
@@ -23,157 +25,183 @@ public class SimpleTest {
     static class ClassWithLocks {
         final Object lock = new Object();
 
-        static synchronized long staticMethodOne() {
-            return staticMethodTwo();
-        }
-
-        static synchronized long staticMethodTwo() {
-            return 1L;
-        }
-
-        synchronized long instanceMethodOne() {
-            return instanceMethodTwo();
-        }
-
-        synchronized long instanceMethodTwo() {
-            return 2L;
-        }
-
-        long blockOne() {
-            synchronized (lock) {
-                return blockTwo();
+        static class InternalException extends RuntimeException {
+            InternalException(String message) {
+                super(message);
             }
         }
 
-        long blockTwo() {
+        static synchronized long staticSynchronizedMethodWithDelegate() {
+            return staticSynchronizedMethod();
+        }
+
+        static synchronized long staticSynchronizedMethod() {
+            return 1L;
+        }
+
+        synchronized long synchronizedMethodWithDelegate() {
+            return synchronizedMethod();
+        }
+
+        synchronized long synchronizedMethod() {
+            return 2L;
+        }
+
+        long synchronizedBlockWithDelegate() {
+            synchronized (lock) {
+                return synchronizedBlock();
+            }
+        }
+
+        long synchronizedBlock() {
             synchronized (lock) {
                 return 3L;
             }
         }
 
-        synchronized static long staticMethodWithException() {
-            throw new RuntimeException("From static method");
+        synchronized static long staticSynchronizedMethodWithException() {
+            throw new InternalException("From static method");
         }
 
-        synchronized long instanceMethodWithException() {
-            throw new RuntimeException("From instance method");
+        synchronized long synchronizedMethodWithException() {
+            throw new InternalException("From instance method");
         }
 
-        long blockWithException() {
+        long synchronizedBlockWithException() {
             synchronized (lock) {
-                throw new RuntimeException("From static block");
+                throw new InternalException("From static block");
             }
         }
 
     }
 
     public static void main(String... args) throws Exception {
-        System.out.println("This test will create :");
-        System.out.println("- Test-Ok-St-Meth - 1 thread that accesses 2 synchronized static methods (reentrant) and returns normally");
-        System.out.println("- Test-Ok-Meth    - 1 thread that accesses 2 synchronized instance methods (reentrant) and returns normally");
-        System.out.println("- Test-Ok-Block   - 1 thread that accesses 2 synchronized blocks (reentrant) and returns normally");
-        System.out.println("- Test-Ex-St-Meth - 1 thread that accesses 1 synchronized static method and throw an Exception");
-        System.out.println("- Test-Ex-Meth    - 1 thread that accesses 1 synchronized instance method and throw an Exception");
-        System.out.println("- Test-Ex-Block   - 1 thread that accesses 1 synchronized block and throw an Exception");
+        System.out.println("INFO - This test will create threads with the following behaviour :");
+        System.out.println("INFO - * staticSynchronizedMethodWithDelegate  - accesses 2 synchronized static methods (reentrant) and returns normally");
+        System.out.println("INFO - * synchronizedMethodWithDelegate        - accesses 2 synchronized instance methods (reentrant) and returns normally");
+        System.out.println("INFO - * synchronizedBlockWithDelegate         - accesses 2 synchronized blocks (reentrant) and returns normally");
+        System.out.println("INFO - * staticSynchronizedMethodWithException - accesses 1 synchronized static method and throw an Exception");
+        System.out.println("INFO - * synchronizedMethodWithException       - accesses 1 synchronized instance method and throw an Exception");
+        System.out.println("INFO - * synchronizedBlockWithException        - accesses 1 synchronized block and throw an Exception");
         System.out.println("");
-        System.out.println("Press enter to start");
-        System.in.read();
 
-        CountDownLatch countDownLatch = new CountDownLatch(6);
-        spawnTestOkStMeth(countDownLatch);
-        spawnTestOkMeth(countDownLatch);
-        spawnTestOkBlock(countDownLatch);
-        spawnTestExStMeth(countDownLatch);
-        spawnTestExMeth(countDownLatch);
-        spawnTestExBlock(countDownLatch);
+        PrintStream stdErr = System.err;
+        try (ByteArrayOutputStream interceptedStdErrBuffer = new ByteArrayOutputStream();
+             PrintStream interceptedStdErr = new PrintStream(interceptedStdErrBuffer, true)) {
+            System.setErr(interceptedStdErr);
 
-        countDownLatch.await();
-        System.out.println("");
-        System.out.println("Test successfully completed. Now please check the output file.");
-        System.in.read();
+            CountDownLatch countDownLatch = new CountDownLatch(6);
+            startStaticSynchronizedNethodWithDelegate(countDownLatch);
+            startSynchonizedMethodWithDelegate(countDownLatch);
+            startSynchronizedBlockWithDelegate(countDownLatch);
+            startStaticSynchronizedMethodWithException(countDownLatch);
+            startSynchronizedMethodWithException(countDownLatch);
+            startSynchronizedBlocksWithException(countDownLatch);
+            countDownLatch.await();
+
+            Thread.sleep(1600);
+
+            String errorMessages = interceptedStdErrBuffer.toString();
+            if (errorMessages.length() > 0) {
+                System.err.println("ERROR - the test generated data on stderr, this should not happen");
+                System.err.println("ERROR - content of stderr :");
+                System.err.println(errorMessages);
+            } else {
+                System.out.println("Test completed. Now please check the output file.");
+            }
+        } finally {
+            System.setErr(stdErr);
+        }
     }
 
 
-    private static void spawnTestOkStMeth(final CountDownLatch countDownLatch) {
+    private static void startStaticSynchronizedNethodWithDelegate(final CountDownLatch countDownLatch) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Test-Ok-St-Meth");
-                ClassWithLocks.staticMethodOne();
+                Thread.currentThread().setName("staticSynchronizedMethodWithDelegate");
+                ClassWithLocks.staticSynchronizedMethodWithDelegate();
                 countDownLatch.countDown();
             }
         }).start();
     }
 
-    private static void spawnTestOkMeth(final CountDownLatch countDownLatch) {
+    private static void startSynchonizedMethodWithDelegate(final CountDownLatch countDownLatch) {
         final ClassWithLocks classWithLocks = new ClassWithLocks();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Test-Ok-Meth");
-                classWithLocks.instanceMethodOne();
+                Thread.currentThread().setName("synchronizedMethodWithDelegate");
+                classWithLocks.synchronizedMethodWithDelegate();
                 countDownLatch.countDown();
             }
         }).start();
     }
 
-    private static void spawnTestOkBlock(final CountDownLatch countDownLatch) {
+    private static void startSynchronizedBlockWithDelegate(final CountDownLatch countDownLatch) {
         final ClassWithLocks classWithLocks = new ClassWithLocks();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Test-Ok-Block");
-                classWithLocks.blockOne();
+                Thread.currentThread().setName("synchronizedBlockWithDelegate");
+                classWithLocks.synchronizedBlockWithDelegate();
                 countDownLatch.countDown();
             }
         }).start();
     }
 
-    private static void spawnTestExStMeth(final CountDownLatch countDownLatch) {
+    private static void startStaticSynchronizedMethodWithException(final CountDownLatch countDownLatch) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Test-Ex-St-Meth");
+                Thread.currentThread().setName("staticSynchronizedMethodWithException");
                 try {
-                    ClassWithLocks.staticMethodWithException();
+                    ClassWithLocks.staticSynchronizedMethodWithException();
+                } catch (ClassWithLocks.InternalException ignored) {
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    countDownLatch.countDown();
                 }
-                countDownLatch.countDown();
             }
         }).start();
 
     }
 
-    private static void spawnTestExMeth(final CountDownLatch countDownLatch) {
+    private static void startSynchronizedMethodWithException(final CountDownLatch countDownLatch) {
         final ClassWithLocks classWithLocks = new ClassWithLocks();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Test-Ex-Meth");
+                Thread.currentThread().setName("synchronizedMethodWithException");
                 try {
-                    classWithLocks.instanceMethodWithException();
+                    classWithLocks.synchronizedMethodWithException();
+                } catch (ClassWithLocks.InternalException ignored) {
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    countDownLatch.countDown();
                 }
-                countDownLatch.countDown();
             }
         }).start();
     }
 
-    private static void spawnTestExBlock(final CountDownLatch countDownLatch) {
+    private static void startSynchronizedBlocksWithException(final CountDownLatch countDownLatch) {
         final ClassWithLocks classWithLocks = new ClassWithLocks();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Thread.currentThread().setName("Test-Ex-Block");
+                Thread.currentThread().setName("synchronizedBlockWithException");
                 try {
-                    classWithLocks.blockWithException();
+                    classWithLocks.synchronizedBlockWithException();
+                } catch (ClassWithLocks.InternalException ignored) {
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    countDownLatch.countDown();
                 }
-                countDownLatch.countDown();
             }
         }).start();
     }
 }
+
