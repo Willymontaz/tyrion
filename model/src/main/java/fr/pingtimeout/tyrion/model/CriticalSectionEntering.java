@@ -20,16 +20,15 @@ package fr.pingtimeout.tyrion.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class CriticalSectionEntering extends CriticalSectionEvent {
-
 
     public CriticalSectionEntering(Thread accessor, Object objectUnderLock) {
         super(accessor, objectUnderLock);
     }
 
-
-    // Constructor required by Jackson unmashalling process
     @JsonCreator
     protected CriticalSectionEntering(
             @JsonProperty("millis") long millis,

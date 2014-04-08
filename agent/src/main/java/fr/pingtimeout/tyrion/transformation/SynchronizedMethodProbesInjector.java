@@ -28,13 +28,10 @@ import fr.pingtimeout.tyrion.util.SimpleLogger;
 
 class SynchronizedMethodProbesInjector extends AdviceAdapter {
 
-
     private final String methodName;
     private final String className;
-
     private final Label startFinally;
     private final Label endFinally;
-
 
     protected SynchronizedMethodProbesInjector(int api, MethodVisitor mv, int access, String name, String desc, String className) {
         super(Opcodes.ASM4, mv, access, name, desc);
@@ -45,7 +42,6 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         this.startFinally = new Label();
         this.endFinally = new Label();
     }
-
 
     @Override
     protected void onMethodEnter() {
@@ -78,7 +74,6 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         super.visitMaxs(maxStack, maxLocals);
     }
 
-
     private void onFinally(int opcode) {
         SimpleLogger.debug("Leaving synchronized method %s", methodName);
 
@@ -92,7 +87,6 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
         }
     }
 
-
     private void pushTargetOnStack() {
         if (isStatic(methodAccess)) {
             pushCurrentClassOnStack();
@@ -100,7 +94,6 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
             pushThisOnStack();
         }
     }
-
 
     private void pushCurrentClassOnStack() {
         mv.visitLdcInsn(className);
@@ -110,11 +103,9 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
                 StaticAccessor.RETRIEVE_CLASS_BY_NAME.getSignature());
     }
 
-
     private void pushThisOnStack() {
         mv.visitVarInsn(ALOAD, 0);
     }
-
 
     private void popTargetAndRecordTryEnter() {
         mv.visitMethodInsn(INVOKESTATIC,
@@ -123,12 +114,10 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
                 StaticAccessor.BEFORE_MONITORENTER_ON_OBJECT.getSignature());
     }
 
-
     private void popTargetAndEnterSynchronizedBlock() {
         mv.visitInsn(MONITORENTER);
         mv.visitLabel(startFinally);
     }
-
 
     private void popTargetAndRecordEnter() {
         mv.visitMethodInsn(INVOKESTATIC,
@@ -137,11 +126,9 @@ class SynchronizedMethodProbesInjector extends AdviceAdapter {
                 StaticAccessor.AFTER_MONITORENTER_ON_OBJECT.getSignature());
     }
 
-
     private void popTargetAndExitSynchronizedBlock() {
         mv.visitInsn(MONITOREXIT);
     }
-
 
     private void popTargetAndRecordExit() {
         mv.visitMethodInsn(INVOKESTATIC,

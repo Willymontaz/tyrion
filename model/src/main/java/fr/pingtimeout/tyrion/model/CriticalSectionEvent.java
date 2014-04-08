@@ -22,10 +22,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import fr.pingtimeout.tyrion.util.TimeSource;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
@@ -33,6 +37,9 @@ import fr.pingtimeout.tyrion.util.TimeSource;
         @JsonSubTypes.Type(value = CriticalSectionEntered.class, name = "enter"),
         @JsonSubTypes.Type(value = CriticalSectionExit.class, name = "exit")
 })
+@EqualsAndHashCode
+@Getter
+@ToString
 public abstract class CriticalSectionEvent implements Comparable<CriticalSectionEvent> {
 
     private static class TimeAndPriorityComparator implements Comparator<CriticalSectionEvent> {
@@ -74,71 +81,36 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
         }
     }
 
-
     static TimeSource timeSource = new TimeSource();
+
     private static final TimeAndPriorityComparator timeAndPriorityComparator = new TimeAndPriorityComparator();
 
     private final long millis;
     private final long nanos;
-
     private final Accessor accessor;
+    private final ObjectUnderLock target;
 
-    @JsonProperty("target")
-    private final ObjectUnderLock objectUnderLock;
-
-
-    public CriticalSectionEvent(Thread accessingThread, Object objectUnderLock) {
+    public CriticalSectionEvent(Thread accessingThread, Object target) {
         this.millis = timeSource.currentTimeMillis();
         this.nanos = timeSource.currentTimeNanos();
         this.accessor = new Accessor(accessingThread);
-        this.objectUnderLock = new ObjectUnderLock(objectUnderLock);
+        this.target = new ObjectUnderLock(target);
     }
 
-
-    // Constructor required by Jackson unmashalling process
     @JsonCreator
     protected CriticalSectionEvent(
             @JsonProperty("millis") long millis,
             @JsonProperty("nanos") long nanos,
             @JsonProperty("accessor") Accessor accessor,
-            @JsonProperty("objectUnderLock") ObjectUnderLock objectUnderLock) {
+            @JsonProperty("target") ObjectUnderLock target) {
         this.millis = millis;
         this.nanos = nanos;
         this.accessor = accessor;
-        this.objectUnderLock = objectUnderLock;
+        this.target = target;
     }
-
 
     @Override
     public int compareTo(CriticalSectionEvent that) {
         return timeAndPriorityComparator.compare(this, that);
-    }
-
-
-    // Getters required by Jackson unmashalling process
-    public long getMillis() {
-        return millis;
-    }
-
-    public long getNanos() {
-        return nanos;
-    }
-
-    public Accessor getAccessor() {
-        return accessor;
-    }
-
-    public ObjectUnderLock getObjectUnderLock() {
-        return objectUnderLock;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{" +
-                "millis=" + millis +
-                ", nanos=" + nanos +
-                ", accessor=" + accessor +
-                ", objectUnderLock=" + objectUnderLock +
-                '}';
     }
 }

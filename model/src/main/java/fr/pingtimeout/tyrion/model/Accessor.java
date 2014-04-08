@@ -20,7 +20,13 @@ package fr.pingtimeout.tyrion.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
+@EqualsAndHashCode
+@Getter
+@ToString
 public class Accessor {
 
     private long id;
@@ -40,36 +46,5 @@ public class Accessor {
             @JsonProperty("name") String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-
-    @Override
-    public String toString() {
-        return Thread.class.getName() + "@" + id + " : " + name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Accessor)) return false;
-
-        Accessor accessor = (Accessor) o;
-
-        if (id != accessor.id) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) (id ^ (id >>> 32));
     }
 }

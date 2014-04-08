@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SerializationTest {
 
     @Test
-    public void should_produce_entering_events_in_a_valid_format() throws Exception {
+    public void output_format_of_entering_events_should_be_json_with_all_needed_information() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
         CriticalSectionEvent.timeSource = new ConstantTimeSource(42, 1);
@@ -48,7 +48,7 @@ public class SerializationTest {
 
 
     @Test
-    public void should_produce_entered_events_in_a_valid_format() throws Exception {
+    public void output_format_of_entered_events_should_be_json_with_all_needed_information() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
         CriticalSectionEvent.timeSource = new ConstantTimeSource(43, 2);
@@ -67,7 +67,7 @@ public class SerializationTest {
 
 
     @Test
-    public void should_produce_exit_events_in_a_valid_format() throws Exception {
+    public void output_format_of_exit_events_should_be_json_with_all_needed_information() throws Exception {
         // Given
         ObjectMapper jsonMapper = new ObjectMapper();
         CriticalSectionEvent.timeSource = new ConstantTimeSource(44, 3);

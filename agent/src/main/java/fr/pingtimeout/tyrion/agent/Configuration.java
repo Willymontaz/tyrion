@@ -19,6 +19,8 @@
 package fr.pingtimeout.tyrion.agent;
 
 import fr.pingtimeout.tyrion.util.SimpleLogger;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,9 +32,7 @@ class Configuration {
     private static final char VALUES_SEPARATOR = ',';
     private static final char NAME_VALUE_SEPARATOR = '=';
 
-
     private final Map<Parameter, ParameterValue> parameters = new HashMap<>();
-
 
     Configuration(String agentArguments) {
         initializeDefaultValues();
@@ -84,35 +84,20 @@ class Configuration {
         return parameters.get(Parameter.ENABLED_AT_STARTUP);
     }
 
-
     @Override
     public String toString() {
         return parameters.values().toString();
     }
 
+    @RequiredArgsConstructor
+    @Getter
     static enum Parameter {
         OUTPUT_FILE("output-file", ""),
         EXCLUDED_THREADS("excluded-threads", ""),
         ENABLED_AT_STARTUP("enabled-at-startup", "false");
 
-
         private final String name;
         private final String defaultValue;
-
-
-        Parameter(String name, String defaultValue) {
-            this.name = name;
-            this.defaultValue = defaultValue;
-        }
-
-
-        String getName() {
-            return name;
-        }
-
-        String getDefaultValue() {
-            return defaultValue;
-        }
 
         static Parameter fromName(String argument) {
             for (Parameter parameter : values()) {
@@ -130,7 +115,6 @@ class Configuration {
         private final Parameter parameter;
         private final String[] values;
 
-
         ParameterValue(Parameter parameter) {
             this(parameter, parameter.getDefaultValue());
         }
@@ -139,26 +123,21 @@ class Configuration {
             if (value.indexOf(NAME_VALUE_SEPARATOR) != -1) {
                 throw new IllegalArgumentException("Invalid character '" + NAME_VALUE_SEPARATOR + "' in " + parameter.getName());
             }
-
             this.parameter = parameter;
             this.values = value.split(String.valueOf(VALUES_SEPARATOR));
         }
-
 
         public boolean isDefaultValue() {
             return values.length == 1 && values[0].equals(parameter.getDefaultValue());
         }
 
-
         public String[] getValues() {
             return values;
         }
 
-
         public String getValue() {
             return values[0];
         }
-
 
         @Override
         public String toString() {

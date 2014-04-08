@@ -20,6 +20,7 @@ package fr.pingtimeout.tyrion.transformation;
 
 import fr.pingtimeout.tyrion.agent.StaticAccessor;
 import fr.pingtimeout.tyrion.util.SimpleLogger;
+import lombok.RequiredArgsConstructor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
@@ -28,16 +29,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
+@RequiredArgsConstructor
 class SynchronizedBlockTransformer {
 
-
     private final ClassNode classNode;
-
-
-    SynchronizedBlockTransformer(ClassNode classNode) {
-        this.classNode = classNode;
-    }
-
 
     void interceptAllSynchronizedBlocks() {
         @SuppressWarnings("unchecked")
@@ -53,7 +48,6 @@ class SynchronizedBlockTransformer {
         }
     }
 
-
     private int interceptAllSynchronizedBlocks(ClassNode classNode, MethodNode methodNode) {
         int numberOfBlocksIntercepted = 0;
         if (SynchronizedMethodTransformer.isSynchronized(methodNode.access)) {
@@ -65,13 +59,11 @@ class SynchronizedBlockTransformer {
         return numberOfBlocksIntercepted;
     }
 
-
     private int interceptSynchronizedBlocks(MethodNode methodNode) {
         int numberOfBlocksIntercepted = interceptMonitorEnter(methodNode);
         interceptMonitorExit(methodNode);
         return numberOfBlocksIntercepted;
     }
-
 
     private int interceptMonitorEnter(MethodNode methodNode) {
         Collection<AbstractInsnNode> monitorEnterInsn = extractMonitorEnterInsn(methodNode);
@@ -101,7 +93,6 @@ class SynchronizedBlockTransformer {
         return monitorEnterInsn.size();
     }
 
-
     private void interceptMonitorExit(MethodNode methodNode) {
         Collection<AbstractInsnNode> monitorExitInsn = extractMonitorExitInsn(methodNode);
 
@@ -118,16 +109,13 @@ class SynchronizedBlockTransformer {
         }
     }
 
-
     private Collection<AbstractInsnNode> extractMonitorEnterInsn(MethodNode methodNode) {
         return extractInstructions(methodNode, Opcodes.MONITORENTER);
     }
 
-
     private Collection<AbstractInsnNode> extractMonitorExitInsn(MethodNode methodNode) {
         return extractInstructions(methodNode, Opcodes.MONITOREXIT);
     }
-
 
     @SuppressWarnings("unchecked")
     private Collection<AbstractInsnNode> extractInstructions(MethodNode methodNode, int instructionToExtract) {
@@ -141,6 +129,4 @@ class SynchronizedBlockTransformer {
         }
         return monitorEnterInsn;
     }
-
-
 }

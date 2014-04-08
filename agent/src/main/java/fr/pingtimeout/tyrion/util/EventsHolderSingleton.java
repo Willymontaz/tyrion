@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public enum EventsHolderSingleton implements EventsHolder {
     INSTANCE;
 
-
     private Map<Long, AtomicReference<List<CriticalSectionEvent>>> events = new ConcurrentHashMap<>();
 
     @Override
@@ -60,7 +59,6 @@ public enum EventsHolderSingleton implements EventsHolder {
         add(accessor, new CriticalSectionExit(accessor, objectUnderLock));
     }
 
-
     private void add(Thread accessor, CriticalSectionEvent newEvent) {
         AtomicReference<List<CriticalSectionEvent>> accessorEventsRef = safeGet(accessor);
         List<CriticalSectionEvent> currentEventsList;
@@ -71,7 +69,6 @@ public enum EventsHolderSingleton implements EventsHolder {
             updatedEventsList = currentEventsList.cons(newEvent);
         } while (!accessorEventsRef.compareAndSet(currentEventsList, updatedEventsList));
     }
-
 
     private AtomicReference<List<CriticalSectionEvent>> safeGet(Thread accessor) {
         long accessorId = accessor.getId();
@@ -84,11 +81,9 @@ public enum EventsHolderSingleton implements EventsHolder {
         return events.get(accessorId);
     }
 
-
     public Set<Long> getThreadIds() {
         return events.keySet();
     }
-
 
     public List<CriticalSectionEvent> getAndClearEventsListOf(Long threadId) {
         AtomicReference<List<CriticalSectionEvent>> accessorEventsRef = events.get(threadId);

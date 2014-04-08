@@ -23,10 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 public class AccessReport {
 
-
     private final Map<Accessor, Set<Access>> criticalSectionsPerAccessor;
     private final Map<ObjectUnderLock, Set<Access>> criticalSectionsPerTarget;
-
 
     public AccessReport(Set<Access> criticalSections) {
         criticalSectionsPerAccessor = new HashMap<>();
@@ -37,7 +35,6 @@ public class AccessReport {
             indexAccessByTarget(access);
         }
     }
-
 
     private void indexAccessByAccessor(Access access) {
         Accessor accessor = access.getAccessor();
@@ -61,7 +58,6 @@ public class AccessReport {
         criticalSectionsForTarget.add(access);
     }
 
-
     public Set<Access> retrieveCriticalSectionsFor(Accessor accessor) {
         return criticalSectionsPerAccessor.get(accessor);
     }
@@ -69,7 +65,6 @@ public class AccessReport {
     public Set<Access> retrieveCriticalSectionsFor(ObjectUnderLock lock) {
         return criticalSectionsPerTarget.get(lock);
     }
-
 
     public int countDifferentAccessorsFor(ObjectUnderLock lock) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
@@ -80,7 +75,6 @@ public class AccessReport {
 
         return accessors.size();
     }
-
 
     public Set<Access> retrieveFrequentAccesses(ObjectUnderLock lock, int delta, TimeUnit unit) {
         Set<Access> accesses = retrieveCriticalSectionsFor(lock);
@@ -111,7 +105,6 @@ public class AccessReport {
         return frequentAccesses;
     }
 
-
     public Set<Access> retrieveContendedAccesses(ObjectUnderLock lock, int delta, TimeUnit unit) {
         Set<Access> frequentAccesses = retrieveFrequentAccesses(lock, delta, unit);
 
@@ -139,7 +132,6 @@ public class AccessReport {
         }
         return contendedAccesses;
     }
-
 
     public Map<ObjectUnderLock, Set<Access>> retrieveAllContendedAccesses(int delta, TimeUnit unit) {
         final Map<ObjectUnderLock, Set<Access>> contendedAccessesPerLock = new HashMap<>();

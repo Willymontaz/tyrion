@@ -33,20 +33,15 @@ public class LockInterceptor implements LockInterceptorMXBean {
 
     private static LockInterceptor INSTANCE = newLockInterceptor();
 
-
     private final EventsHolder eventsHolder;
-
     private final AtomicBoolean enabled;
-
     private final Set<String> excludedThreads;
-
 
     LockInterceptor(EventsHolder eventsHolder, AtomicBoolean enabled) {
         this.eventsHolder = eventsHolder;
         this.enabled = enabled;
         excludedThreads = new HashSet<>();
     }
-
 
     @Override
     public boolean isEnabled() {

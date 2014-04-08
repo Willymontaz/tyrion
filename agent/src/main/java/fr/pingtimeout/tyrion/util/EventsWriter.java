@@ -30,19 +30,15 @@ import java.util.Set;
 public class EventsWriter implements Runnable {
 
     public static final boolean DO_APPEND = true;
-
     public static final String THREAD_NAME = "TyrionLocksWriter";
 
     private final ObjectMapper jsonMapper;
-
     private final String outputFile;
-
 
     public EventsWriter(String outputFile) {
         this.outputFile = outputFile;
-        jsonMapper = new ObjectMapper();
+        this.jsonMapper = new ObjectMapper();
     }
-
 
     @Override
     public void run() {
@@ -59,14 +55,12 @@ public class EventsWriter implements Runnable {
         }
     }
 
-
     private void writeEvents(BufferedWriter writer) throws IOException {
         Set<Long> threadIds = EventsHolderSingleton.INSTANCE.getThreadIds();
         for (Long threadId : threadIds) {
             writeEvents(writer, threadId);
         }
     }
-
 
     private void writeEvents(BufferedWriter writer, Long threadId) throws IOException {
         List<CriticalSectionEvent> accessorEvents = EventsHolderSingleton.INSTANCE.getAndClearEventsListOf(threadId);

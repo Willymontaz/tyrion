@@ -32,16 +32,10 @@ public class LocksFileReader {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-
-    private final Logger logger;
-
-    private final Set<Access> criticalSections;
-
+    private final Logger logger = Logger.getLogger(getClass().getName());
+    private final Set<Access> criticalSections = new TreeSet<>();
 
     public LocksFileReader(File file) {
-        logger = Logger.getLogger(getClass().getName());
-        criticalSections = new TreeSet<>();
-
         try (InputStream inputStream = new FileInputStream(file)) {
             loadFile(inputStream);
         } catch (IOException e) {
@@ -50,12 +44,8 @@ public class LocksFileReader {
     }
 
     public LocksFileReader(InputStream inputStream) {
-        logger = Logger.getLogger(getClass().getName());
-        criticalSections = new TreeSet<>();
-
         loadFile(inputStream);
     }
-
 
     private void loadFile(InputStream inputStream) {
         final Map<Accessor, CriticalSectionEntered> lastEnterInCriticalSection = new HashMap<>();
@@ -71,7 +61,6 @@ public class LocksFileReader {
         }
     }
 
-
     private void processLine(String line, Map<Accessor, CriticalSectionEntered> lastEnterInCriticalSection) throws IOException {
         if (line.startsWith("{\"enter\":")) {
             CriticalSectionEntered event = OBJECT_MAPPER.readValue(line, CriticalSectionEntered.class);
@@ -84,7 +73,6 @@ public class LocksFileReader {
             logger.warning("Unknown line: " + line);
         }
     }
-
 
     private void process(CriticalSectionExit exit, Map<Accessor, CriticalSectionEntered> lastEnterInCriticalSection) {
         Accessor accessor = exit.getAccessor();
@@ -114,7 +102,6 @@ public class LocksFileReader {
             logger.log(Level.FINE, "Got two consecutive 'enter', ignoring the first one", enter);
         }
     }
-
 
     public AccessReport buildAccessReport() {
         return new AccessReport(criticalSections);

@@ -31,18 +31,13 @@ import fr.pingtimeout.tyrion.util.SimpleLogger;
  * synchronized block on the current lock ({@code this} for instance methods, the current class for static methods).
  */
 class SynchronizedMethodTransformer extends ClassVisitor {
-//class SynchronizedMethodTransformer extends CheckClassAdapter {
-
 
     private final String className;
 
-
     public SynchronizedMethodTransformer(int api, ClassVisitor cv, String className) {
         super(api, cv);
-//        super(cv);
         this.className = className;
     }
-
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -61,16 +56,13 @@ class SynchronizedMethodTransformer extends ClassVisitor {
         return result;
     }
 
-
     public static boolean isSynchronized(int access) {
         return (access & Opcodes.ACC_SYNCHRONIZED) != 0;
     }
 
-
     public static boolean isStatic(int access) {
         return (access & Opcodes.ACC_STATIC) != 0;
     }
-
 
     public static String accessToString(int access) {
         Map<Integer, String> opCodes = opCodeToString();

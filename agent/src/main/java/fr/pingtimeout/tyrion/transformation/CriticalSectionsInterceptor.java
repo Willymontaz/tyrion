@@ -19,6 +19,7 @@
 package fr.pingtimeout.tyrion.transformation;
 
 import fr.pingtimeout.tyrion.util.SimpleLogger;
+import lombok.NoArgsConstructor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -33,9 +34,7 @@ import java.security.ProtectionDomain;
 
 public class CriticalSectionsInterceptor implements ClassFileTransformer {
 
-
     private final PrintWriter traceBytecodeWriter;
-
 
     public CriticalSectionsInterceptor() {
         traceBytecodeWriter = null;
@@ -44,7 +43,6 @@ public class CriticalSectionsInterceptor implements ClassFileTransformer {
     public CriticalSectionsInterceptor(PrintWriter traceBytecodeWriter) {
         this.traceBytecodeWriter = traceBytecodeWriter;
     }
-
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -59,7 +57,6 @@ public class CriticalSectionsInterceptor implements ClassFileTransformer {
             return classfileBuffer;
         }
     }
-
 
     byte[] transform(String className, byte[] classfileBuffer) {
         ClassReader reader = new ClassReader(classfileBuffer);
