@@ -60,17 +60,15 @@ class Configuration {
     private void parse(String agentArguments) {
         String[] arguments = agentArguments.split(String.valueOf(ARGUMENT_SEPARATOR));
         for (String argument : arguments) {
-            final int equalSign = argument.indexOf(NAME_VALUE_SEPARATOR);
-            final String argumentName = argument.substring(0, equalSign);
-            final String argumentValue = argument.substring(equalSign + 1, argument.length());
-
-            final Parameter parameter = Parameter.fromName(argumentName);
-            final ParameterValue value = new ParameterValue(parameter, argumentValue);
+            int equalCharPosition = argument.indexOf(NAME_VALUE_SEPARATOR);
+            String argumentName = argument.substring(0, equalCharPosition);
+            String argumentValue = argument.substring(equalCharPosition + 1, argument.length());
+            Parameter parameter = Parameter.fromName(argumentName);
+            ParameterValue value = new ParameterValue(parameter, argumentValue);
 
             parameters.put(parameter, value);
         }
     }
-
 
     public ParameterValue outputFile() {
         return parameters.get(Parameter.OUTPUT_FILE);

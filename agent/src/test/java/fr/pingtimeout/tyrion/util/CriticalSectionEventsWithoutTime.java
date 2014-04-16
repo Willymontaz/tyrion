@@ -30,8 +30,8 @@ public class CriticalSectionEventsWithoutTime implements Comparator<CriticalSect
         Accessor e1Accessor = e1.getAccessor();
         Accessor e2Accessor = e2.getAccessor();
 
-        ObjectUnderLock e1ObjectUnderLock = e1.getObjectUnderLock();
-        ObjectUnderLock e2ObjectUnderLock = e2.getObjectUnderLock();
+        ObjectUnderLock e1ObjectUnderLock = e1.getTarget();
+        ObjectUnderLock e2ObjectUnderLock = e2.getTarget();
 
         if (e1.getClass().equals(e2.getClass())
                 && e1Accessor.equals(e2Accessor)

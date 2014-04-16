@@ -29,11 +29,13 @@ public class CriticalSectionEventTest {
     @Test
     public void sorting_order_should_be_determined_by_millis_first_and_then_nanos() {
         // Given
-        CriticalSectionEntered event_at_1_0 = new CriticalSectionEntered(1, 0, mock(Accessor.class), mock(ObjectUnderLock.class));
-        CriticalSectionExit event_at_2_0 = new CriticalSectionExit(2, 0, mock(Accessor.class), mock(ObjectUnderLock.class));
-        CriticalSectionEntered event_at_2_1 = new CriticalSectionEntered(2, 1, mock(Accessor.class), mock(ObjectUnderLock.class));
-        CriticalSectionEntering event_at_2_2 = new CriticalSectionEntering(2, 2, mock(Accessor.class), mock(ObjectUnderLock.class));
-        CriticalSectionEntering event_at_3_0 = new CriticalSectionEntering(3, 0, mock(Accessor.class), mock(ObjectUnderLock.class));
+        Accessor accessor = new Accessor(1, "Thread 1");
+        ObjectUnderLock target = new ObjectUnderLock("java.lang.Object", 123);
+        CriticalSectionEntered event_at_1_0 = new CriticalSectionEntered(1, 0, accessor, target);
+        CriticalSectionExit event_at_2_0 = new CriticalSectionExit(2, 0, accessor, target);
+        CriticalSectionEntered event_at_2_1 = new CriticalSectionEntered(2, 1, accessor, target);
+        CriticalSectionEntering event_at_2_2 = new CriticalSectionEntering(2, 2, accessor, target);
+        CriticalSectionEntering event_at_3_0 = new CriticalSectionEntering(3, 0, accessor, target);
 
         // When
         TreeSet<CriticalSectionEvent> events = new TreeSet<>();

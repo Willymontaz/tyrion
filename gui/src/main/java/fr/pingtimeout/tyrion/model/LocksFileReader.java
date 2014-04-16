@@ -81,16 +81,10 @@ public class LocksFileReader {
         if (lastEnter == null) {
             logger.log(Level.FINE, "Got 'exit' without matching 'enter', ignoring event", exit);
         } else {
-            Access criticalSection = new Access(
-                    lastEnter.getTimestamp(), exit.getTimestamp(),
-                    accessor,
-                    lastEnter.getObjectUnderLock());
-
-            criticalSections.add(criticalSection);
+            criticalSections.add(new Access(lastEnter, exit));
             lastEnterInCriticalSection.remove(accessor);
         }
     }
-
 
     private void process(CriticalSectionEntered enter, Map<Accessor, CriticalSectionEntered> lastEnterInCriticalSection) {
         Accessor accessor = enter.getAccessor();

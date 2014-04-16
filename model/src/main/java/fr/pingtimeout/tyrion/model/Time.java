@@ -16,20 +16,25 @@
  * along with this work; if not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.pingtimeout.tyrion.util;
+package fr.pingtimeout.tyrion.model;
 
-import fr.pingtimeout.tyrion.model.Time;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-public class TimeSource {
-    public Time currentTime() {
-        return new Time(currentTimeMillis(), currentTimeNanos());
-    }
+@Getter
+@EqualsAndHashCode
+@ToString
+public class Time {
 
-    public long currentTimeMillis() {
-        return System.currentTimeMillis();
-    }
+    private final long millis;
+    private final long nanos;
 
-    public long currentTimeNanos() {
-        return System.nanoTime();
+    @JsonCreator
+    public Time(@JsonProperty("millis") long millis, @JsonProperty("nanos") long nanos) {
+        this.millis = millis;
+        this.nanos = nanos;
     }
 }
