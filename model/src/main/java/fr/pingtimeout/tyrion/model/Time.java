@@ -27,7 +27,7 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
-public class Time {
+public class Time implements Comparable<Time> {
 
     private final long millis;
     private final long nanos;
@@ -36,5 +36,13 @@ public class Time {
     public Time(@JsonProperty("millis") long millis, @JsonProperty("nanos") long nanos) {
         this.millis = millis;
         this.nanos = nanos;
+    }
+
+    @Override
+    public int compareTo(Time that) {
+        if (this.millis == that.millis) {
+            return ((Long) this.nanos).compareTo(that.nanos);
+        }
+        return ((Long) this.millis).compareTo(that.millis);
     }
 }

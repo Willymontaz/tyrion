@@ -41,7 +41,7 @@ public class SerializationTest {
 
         // Then
         assertThat(entering).isEqualTo(
-                "{'entering':{'millis':42,'nanos':1,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1337,'className':'java.lang.Object'}}}"
+                "{'entering':{'accessor':{'id':1,'name':'main'},'target':{'hashcode':1337,'className':'java.lang.Object'},'time':{'millis':42,'nanos':1}}}"
                         .replace('\'', '"')
         );
     }
@@ -60,7 +60,7 @@ public class SerializationTest {
 
         // Then
         assertThat(entered).isEqualTo(
-                "{'enter':{'millis':43,'nanos':2,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1338,'className':'java.lang.Object'}}}"
+                "{'enter':{'accessor':{'id':1,'name':'main'},'target':{'hashcode':1338,'className':'java.lang.Object'},'time':{'millis':43,'nanos':2}}}"
                         .replace('\'', '"')
         );
     }
@@ -79,7 +79,7 @@ public class SerializationTest {
 
         // Then
         assertThat(exit).isEqualTo(
-                "{'exit':{'millis':44,'nanos':3,'accessor':{'id':1,'name':'main'},'target':{'hashcode':1339,'className':'java.lang.Object'}}}"
+                "{'exit':{'accessor':{'id':1,'name':'main'},'target':{'hashcode':1339,'className':'java.lang.Object'},'time':{'millis':44,'nanos':3}}}"
                         .replace('\'', '"')
         );
     }

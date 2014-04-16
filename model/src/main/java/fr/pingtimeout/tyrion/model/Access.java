@@ -41,10 +41,7 @@ public class Access implements Comparable<Access> {
             throw new IllegalArgumentException("Events do not reference the same lock");
         }
 
-        this.duration = new Duration(
-                enterTime.getMillis(), enterTime.getNanos(),
-                exitTime.getMillis(), exitTime.getNanos()
-        );
+        this.duration = new Duration(enterTime.getTime(), exitTime.getTime());
         this.accessor = enterTime.getAccessor();
         this.objectUnderLock = exitTime.getTarget();
     }

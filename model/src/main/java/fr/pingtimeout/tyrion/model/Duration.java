@@ -47,6 +47,10 @@ public class Duration implements Comparable<Duration> {
         this.exitNanos = exitNanos;
     }
 
+    public Duration(Time enter, Time exit) {
+        this(enter.getMillis(), enter.getNanos(), exit.getMillis(), exit.getNanos());
+    }
+
 
     /**
      * Checks if the current Duration instance intersects with a given Duration, considering a possible delta between those two events.
