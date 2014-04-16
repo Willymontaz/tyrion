@@ -32,12 +32,10 @@ public class EventsWriter implements Runnable {
     public static final boolean DO_APPEND = true;
     public static final String THREAD_NAME = "TyrionLocksWriter";
 
-    private final ObjectMapper jsonMapper;
     private final String outputFile;
 
     public EventsWriter(String outputFile) {
         this.outputFile = outputFile;
-        this.jsonMapper = new ObjectMapper();
     }
 
     @Override
@@ -69,7 +67,7 @@ public class EventsWriter implements Runnable {
         // Iterate through the list in the reverse order
         for (int i = accessorEvents.length() - 1; i >= 0; i--) {
             CriticalSectionEvent accessorEvent = accessorEvents.index(i);
-            writer.write(jsonMapper.writeValueAsString(accessorEvent));
+            writer.write(accessorEvent.serializeToString());
             writer.write("\n");
         }
     }

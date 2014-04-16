@@ -18,11 +18,16 @@
 
 package fr.pingtimeout.tyrion.model;
 
+import java.io.IOException;
 import java.util.Comparator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.pingtimeout.tyrion.util.TimeSource;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -66,6 +71,10 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
     public int compareTo(CriticalSectionEvent that) {
         return TimeAndPriorityComparator.INSTANCE.compare(this, that);
     }
+
+    public String serializeToString() {
+        return EventSerializer.INSTANCE.convertEventToString(this);
+    }
 }
 
 enum TimeAndPriorityComparator implements Comparator<CriticalSectionEvent> {
@@ -95,4 +104,35 @@ enum TimeAndPriorityComparator implements Comparator<CriticalSectionEvent> {
         throw new IllegalArgumentException("Unknown type of critical section");
     }
 
+}
+
+enum EventSerializer {
+    INSTANCE;
+
+    private final ObjectMapper jsonMapper = new ObjectMapper();
+
+    public String convertEventToString(CriticalSectionEvent event) {
+        try {
+            return jsonMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Cannot serialize event " + event);
+        }
+    }
+
+    public CriticalSectionEvent convertStringToEvent(String eventAsString) {
+        try {
+
+            if (eventAsString.startsWith("{\"entering\":")) {
+                return jsonMapper.readValue(eventAsString, CriticalSectionEntering.class);
+            } else if (eventAsString.startsWith("{\"enter\":")) {
+                return jsonMapper.readValue(eventAsString, CriticalSectionEntered.class);
+            } else if (eventAsString.startsWith("{\"exit\":")) {
+                return jsonMapper.readValue(eventAsString, CriticalSectionExit.class);
+            } else {
+                throw new IllegalArgumentException("Cannot deserialize event " + eventAsString);
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Cannot deserialize event " + eventAsString, e);
+        }
+    }
 }
