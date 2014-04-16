@@ -19,8 +19,6 @@
 package fr.pingtimeout.tyrion.model;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -41,38 +39,7 @@ import lombok.ToString;
 @ToString
 public abstract class CriticalSectionEvent implements Comparable<CriticalSectionEvent> {
 
-    private static class TimeAndPriorityComparator implements Comparator<CriticalSectionEvent> {
-        private final PriorityComparator priorityComparator = new PriorityComparator();
-
-        @Override
-        public int compare(CriticalSectionEvent e1, CriticalSectionEvent e2) {
-            int timeComparison = e1.time.compareTo(e2.getTime());
-            if (timeComparison == 0) {
-                return priorityComparator.compare(e1, e2);
-            }
-            return timeComparison;
-        }
-    }
-
-    private static class PriorityComparator implements Comparator<CriticalSectionEvent> {
-
-        private final static Map<Class<? extends CriticalSectionEvent>, Integer> priorities = new HashMap<Class<? extends CriticalSectionEvent>, Integer>() {{
-            put(CriticalSectionEntering.class, 1);
-            put(CriticalSectionEntered.class, 2);
-            put(CriticalSectionExit.class, 3);
-        }};
-
-        @Override
-        public int compare(CriticalSectionEvent e1, CriticalSectionEvent e2) {
-            Integer e1Priority = priorities.get(e1.getClass());
-            Integer e2Priority = priorities.get(e2.getClass());
-            return e1Priority.compareTo(e2Priority);
-        }
-
-    }
     static TimeSource timeSource = new TimeSource();
-
-    private static final TimeAndPriorityComparator timeAndPriorityComparator = new TimeAndPriorityComparator();
 
     private final Time time;
     private final Accessor accessor;
@@ -97,6 +64,35 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
 
     @Override
     public int compareTo(CriticalSectionEvent that) {
-        return timeAndPriorityComparator.compare(this, that);
+        return TimeAndPriorityComparator.INSTANCE.compare(this, that);
     }
+}
+
+enum TimeAndPriorityComparator implements Comparator<CriticalSectionEvent> {
+    INSTANCE;
+
+    @Override
+    public int compare(CriticalSectionEvent a, CriticalSectionEvent b) {
+        int timeComparison = compareTime(a, b);
+        if (timeComparison == 0) {
+            return comparePriority(a, b);
+        }
+        return timeComparison;
+    }
+
+    private int compareTime(CriticalSectionEvent a, CriticalSectionEvent b) {
+        return a.getTime().compareTo(b.getTime());
+    }
+
+    private int comparePriority(CriticalSectionEvent a, CriticalSectionEvent b) {
+        return priorityOf(a) - priorityOf(b);
+    }
+
+    private int priorityOf(CriticalSectionEvent event) {
+        if (event instanceof CriticalSectionEntering) return 1;
+        if (event instanceof CriticalSectionEntered) return 2;
+        if (event instanceof CriticalSectionExit) return 3;
+        throw new IllegalArgumentException("Unknown type of critical section");
+    }
+
 }
