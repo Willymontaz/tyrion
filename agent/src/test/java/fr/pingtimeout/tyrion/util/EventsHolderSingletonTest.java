@@ -20,6 +20,7 @@ package fr.pingtimeout.tyrion.util;
 
 import fr.pingtimeout.tyrion.model.*;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -86,6 +87,7 @@ public class EventsHolderSingletonTest {
     }
 
     @Test
+    @Ignore
     public void test_record_entries_and_exit_multithreaded() throws InterruptedException {
         // Given
         final Object lock = new Object();

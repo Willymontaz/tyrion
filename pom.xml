@@ -39,7 +39,7 @@
     <modules>
         <module>agent</module>
         <module>model</module>
-        <module>gui</module>
+        <!--<module>gui</module>-->
     </modules>
 
     <dependencyManagement>
