@@ -51,14 +51,6 @@ public class Access implements Comparable<Access> {
         return this.duration.compareTo(that.duration);
     }
 
-    public boolean matches(Access that, int delta, TimeUnit unit) {
-        return this.duration.intersectsWithin(that.duration, delta, unit);
-    }
-
-    public boolean isAccessedBy(Accessor accessor) {
-        return this.accessor.equals(accessor);
-    }
-
     static class Builder {
         private long enterMillis;
         private long enterNanos;
@@ -74,9 +66,7 @@ public class Access implements Comparable<Access> {
         }
 
         public Builder enterAt(long enterMillis) {
-            this.enterMillis = enterMillis;
-            this.enterNanos = 0;
-            return this;
+            return enterAt(enterMillis, 0);
         }
 
         public Builder exitAt(long exitMillis, long exitNanos) {
@@ -86,14 +76,20 @@ public class Access implements Comparable<Access> {
         }
 
         public Builder exitAt(long exitMillis) {
-            this.exitMillis = exitMillis;
-            this.exitNanos = 0;
-            return this;
+            return exitAt(exitMillis, 0);
+        }
+
+        public Builder by(long threadId, String threadName) {
+            return by(new Accessor(threadId, threadName));
         }
 
         public Builder by(Accessor accessor) {
             this.accessor = accessor;
             return this;
+        }
+
+        public Builder on(Object o) {
+            return on(new ObjectUnderLock(o));
         }
 
         public Builder on(ObjectUnderLock objectUnderLock) {
@@ -105,11 +101,6 @@ public class Access implements Comparable<Access> {
             CriticalSectionEntered enter = new CriticalSectionEntered(enterMillis, enterNanos, accessor, objectUnderLock);
             CriticalSectionExit exit = new CriticalSectionExit(exitMillis, exitNanos, accessor, objectUnderLock);
             return new Access(enter, exit);
-        }
-
-        public Builder by(long threadId, String threadName) {
-            this.accessor = new Accessor(threadId, threadName);
-            return this;
         }
     }
 }

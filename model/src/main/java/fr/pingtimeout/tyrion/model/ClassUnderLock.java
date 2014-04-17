@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ClassUnderLock extends ObjectUnderLock {
 
     private final String classLoaderName;
-
     private final long classLoaderHashcode;
 
     public ClassUnderLock(Class<?> target) {

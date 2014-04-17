@@ -38,6 +38,14 @@ public class Time implements Comparable<Time> {
         this.nanos = nanos;
     }
 
+    public boolean isStrinctlyBefore(Time that) {
+        return this.compareTo(that) < 0;
+    }
+
+    public boolean isBefore(Time that) {
+        return this.compareTo(that) <= 0;
+    }
+
     @Override
     public int compareTo(Time that) {
         if (this.millis == that.millis) {

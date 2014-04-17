@@ -22,14 +22,6 @@ import fr.pingtimeout.tyrion.model.Time;
 
 public class TimeSource {
     public Time currentTime() {
-        return new Time(currentTimeMillis(), currentTimeNanos());
-    }
-
-    public long currentTimeMillis() {
-        return System.currentTimeMillis();
-    }
-
-    public long currentTimeNanos() {
-        return System.nanoTime();
+        return new Time(System.currentTimeMillis(), System.nanoTime());
     }
 }

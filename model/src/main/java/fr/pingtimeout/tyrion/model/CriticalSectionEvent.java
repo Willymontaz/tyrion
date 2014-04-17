@@ -18,15 +18,15 @@
 
 package fr.pingtimeout.tyrion.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.pingtimeout.tyrion.util.TimeSource;
 import lombok.EqualsAndHashCode;
@@ -67,13 +67,19 @@ public abstract class CriticalSectionEvent implements Comparable<CriticalSection
         this.target = target;
     }
 
+    public abstract char discriminator();
+
     @Override
     public int compareTo(CriticalSectionEvent that) {
         return TimeAndPriorityComparator.INSTANCE.compare(this, that);
     }
 
-    public String serializeToString() {
-        return EventSerializer.INSTANCE.convertEventToString(this);
+    public String serializeToJsonString() {
+        return EventSerializer.INSTANCE.convertEventToJsonString(this);
+    }
+
+    public byte[] serializeToRawString() {
+        return EventSerializer.INSTANCE.convertEventToRawString(this);
     }
 }
 
@@ -111,11 +117,25 @@ enum EventSerializer {
 
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
-    public String convertEventToString(CriticalSectionEvent event) {
+    public String convertEventToJsonString(CriticalSectionEvent event) {
         try {
             return jsonMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Cannot serialize event " + event);
+        }
+    }
+
+    public byte[] convertEventToRawString(CriticalSectionEvent event) {
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             DataOutputStream output = new DataOutputStream(byteArrayOutputStream)) {
+            output.writeLong(event.getTime().getMillis());
+            output.writeLong(event.getTime().getNanos());
+            output.writeChar(event.discriminator());
+
+            return byteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            return new byte[0];
         }
     }
 

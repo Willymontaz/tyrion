@@ -30,15 +30,12 @@ import lombok.ToString;
 public class Accessor {
 
     private long id;
-
     private String name;
-
 
     public Accessor(Thread accessingThread) {
         this.id = accessingThread.getId();
         this.name = accessingThread.getName();
     }
-
 
     @JsonCreator
     protected Accessor(

@@ -37,4 +37,9 @@ public class CriticalSectionExit extends CriticalSectionEvent {
             @JsonProperty("target") ObjectUnderLock objectUnderLock) {
         super(millis, nanos, accessor, objectUnderLock);
     }
+
+    @Override
+    public char discriminator() {
+        return 'x';
+    }
 }

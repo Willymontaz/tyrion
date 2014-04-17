@@ -18,7 +18,6 @@
 
 package fr.pingtimeout.tyrion.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fj.data.List;
 import fr.pingtimeout.tyrion.model.CriticalSectionEvent;
 
@@ -67,7 +66,7 @@ public class EventsWriter implements Runnable {
         // Iterate through the list in the reverse order
         for (int i = accessorEvents.length() - 1; i >= 0; i--) {
             CriticalSectionEvent accessorEvent = accessorEvents.index(i);
-            writer.write(accessorEvent.serializeToString());
+            writer.write(accessorEvent.serializeToJsonString());
             writer.write("\n");
         }
     }

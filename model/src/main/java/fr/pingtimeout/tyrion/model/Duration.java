@@ -31,20 +31,16 @@ import lombok.ToString;
 @ToString
 public class Duration implements Comparable<Duration> {
 
-    private final long enterMillis;
-    private final long enterNanos;
-    private final long exitMillis;
-    private final long exitNanos;
+    private final Time enterTime;
+    private final Time exitTime;
 
     @JsonCreator
     public Duration(@JsonProperty long enterMillis,
                     @JsonProperty long enterNanos,
                     @JsonProperty long exitMillis,
                     @JsonProperty long exitNanos) {
-        this.enterMillis = enterMillis;
-        this.enterNanos = enterNanos;
-        this.exitMillis = exitMillis;
-        this.exitNanos = exitNanos;
+        this.enterTime = new Time(enterMillis, enterNanos);
+        this.exitTime = new Time(exitMillis, exitNanos);
     }
 
     public Duration(Time enter, Time exit) {
@@ -68,30 +64,27 @@ public class Duration implements Comparable<Duration> {
      * @return
      */
     public boolean intersectsWithin(Duration that, int delta, TimeUnit unit) {
-        if (that.enterMillis < this.enterMillis)
+        // Here there is all possible combinations (this being before, interleaved with, during or after that)
+        if(that.getEnterTime().isStrinctlyBefore(this.getEnterTime())) {
+            // Flip parameters so that that is always after this
             return that.intersectsWithin(this, delta, unit);
-        return that.enterMillis <= this.enterMillis + unit.toMillis(delta);
+        }
 
-//        return false;
-
-//        boolean startedAtSameMillis = that.enterMillis == this.enterMillis;
-//
-//        boolean thatStartedAfterThis = that.enterMillis >= this.exitTime;
-//        boolean thatEndedBeforeThisExitPlusDelta = that.enterMillis <= (this.exitTime + unit.toMillis(delta));
-//
-//        return thatStartedAfterThis && thatEndedBeforeThisExitPlusDelta;
+        // Here the only combinations remaining are : that (y) starts after-or-exactly-at this (x) beggining
+        // x--x y----y
+        // x-yx---y
+        // yx--xy
+        return that.getExitTime().isBefore(this.getExitTime());
     }
 
 
     public boolean intersectsWithin(Duration that) {
-        return that.enterMillis < this.exitMillis
-                && this.enterMillis < that.exitMillis;
-//        return false;  //To change body of created methods use File | Settings | File Templates.
+        return  intersectsWithin(that, 0, TimeUnit.MILLISECONDS);
     }
 
 
     @Override
     public int compareTo(Duration that) {
-        return (int) (this.enterMillis - that.enterMillis);
+        return this.getEnterTime().compareTo(that.getEnterTime());
     }
 }
